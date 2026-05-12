@@ -75,13 +75,22 @@ async function seedData() {
 async function getAll(storeName) {
   const typeMap = { quotations: 'quotation', customers: 'customer', items: 'item', transactions: 'transaction' };
   const type = typeMap[storeName] || storeName;
+  
+  // Attempt to load from localStorage first as stable offline baseline
+  let localData = [];
+  try { localData = JSON.parse(localStorage.getItem('shk_' + storeName)) || []; } catch(e){}
+
   try {
     const docs = await sanityClient.fetch(`*[_type == "${type}"]`);
-    return docs.map(d => ({ ...d, id: d._id }));
+    if (docs && docs.length > 0) {
+      const cloudData = docs.map(d => ({ ...d, id: d._id }));
+      try { localStorage.setItem('shk_' + storeName, JSON.stringify(cloudData)); } catch(e){}
+      return cloudData;
+    }
+    return localData;
   } catch (err) {
-    console.error('Sanity fetch error:', err);
-    toast('Gagal memuat data dari Sanity Cloud', 'error');
-    return [];
+    console.warn('Sanity fetch offline/error, loaded from local storage:', err.message);
+    return localData;
   }
 }
 
@@ -89,15 +98,28 @@ async function save(storeName, data) {
   const typeMap = { quotations: 'quotation', customers: 'customer', items: 'item', transactions: 'transaction' };
   const type = typeMap[storeName] || storeName;
   
-  if (!sanityClient.config().token) {
-    toast('Error: Masukkan Sanity API Token di Pengaturan untuk menyimpan!', 'error');
-    openModal('modal-settings');
-    throw new Error('No write token');
+  // Ensure array items have _key property required by Sanity schema validation
+  let preparedData = { ...data };
+  if (preparedData.items && Array.isArray(preparedData.items)) {
+    preparedData.items = preparedData.items.map(it => ({
+      ...it,
+      _key: it._key || Math.random().toString(36).substring(7)
+    }));
   }
 
-  // Remove keys that start with _ if they are undefined or mapped
+  // 1. Persist to Local State immediately so UI never blocks or freezes
+  if (!state[storeName]) state[storeName] = [];
+  const existingIdx = state[storeName].findIndex(x => x.id === data.id);
+  if (existingIdx >= 0) {
+    state[storeName][existingIdx] = data;
+  } else {
+    state[storeName].push(data);
+  }
+  try { localStorage.setItem('shk_' + storeName, JSON.stringify(state[storeName])); } catch(e){}
+
+  // 2. Sync to Sanity Cloud gracefully in the background
   const sanityDoc = {
-    ...data,
+    ...preparedData,
     _type: type,
     _id: data.id || data._id
   };
@@ -107,24 +129,24 @@ async function save(storeName, data) {
     const res = await sanityClient.createOrReplace(sanityDoc);
     return { ...res, id: res._id };
   } catch (err) {
-    console.error('Sanity save error:', err);
-    toast('Gagal menyimpan ke cloud: ' + err.message, 'error');
-    throw err;
+    console.warn('Sanity Cloud save fallback:', err.message);
+    toast('Tersimpan lokal (Cloud offline/tertunda)', 'primary');
+    return data;
   }
 }
 
 async function remove(storeName, id) {
-  if (!sanityClient.config().token) {
-    toast('Error: Masukkan Sanity API Token di Pengaturan untuk menghapus!', 'error');
-    openModal('modal-settings');
-    throw new Error('No write token');
+  // Update local state immediately
+  if (state[storeName]) {
+    state[storeName] = state[storeName].filter(x => x.id !== id);
+    try { localStorage.setItem('shk_' + storeName, JSON.stringify(state[storeName])); } catch(e){}
   }
+
   try {
     await sanityClient.delete(id);
   } catch (err) {
-    console.error('Sanity delete error:', err);
-    toast('Gagal menghapus dari cloud: ' + err.message, 'error');
-    throw err;
+    console.warn('Sanity Cloud delete fallback:', err.message);
+    toast('Dihapus lokal (Cloud offline)', 'amber');
   }
 }
 
@@ -177,6 +199,10 @@ function navigateTo(pageId) {
   // Update Bottom Nav
   const bottomItem = document.querySelector(`.b-nav-item[data-target="${pageId}"]`);
   if (bottomItem) bottomItem.classList.add('active');
+  
+  if (pageId === 'logos') {
+    loadLogosAdmin();
+  }
   
   if (window.innerWidth <= 768) {
     const sb = document.getElementById('sidebar');
@@ -395,12 +421,15 @@ async function saveQuotation(e) {
     }
   }
 
-  await loadAllData();
+  // Update UI and close modal immediately for snappy responsiveness
   updateUI();
   updateCharts();
   closeModal('modal-quotation');
   toast('Quotation berhasil disimpan');
+
+  try { await loadAllData(); updateUI(); } catch(e){}
 }
+
 
 function editQuote(id) {
   const q = state.quotations.find(x => x.id === id);
@@ -425,6 +454,35 @@ function editQuote(id) {
   q.items.forEach(i => addQuoteRow(i));
   calcQuote();
   openModal('modal-quotation');
+}
+
+function printInvoice(id) {
+  const q = state.quotations.find(x => x.id === id);
+  if (!q) return;
+  
+  // Enrich items with real names, units, and descriptions from master catalog
+  const enrichedItems = (q.items || []).map(it => {
+    const masterItem = state.items.find(mi => mi.id === it.id);
+    return {
+      ...it,
+      name: masterItem ? masterItem.name : (it.name || it.id),
+      unit: masterItem ? masterItem.unit : (it.unit || 'Unit'),
+      desc: masterItem ? masterItem.desc : (it.desc || '')
+    };
+  });
+
+  const rawTotal = enrichedItems.reduce((sum, it) => sum + (it.total || 0), 0);
+  const discountAmount = rawTotal * (q.discount || 0) / 100;
+
+  const printData = {
+    ...q,
+    items: enrichedItems,
+    subTotal: rawTotal,
+    discountAmount: discountAmount
+  };
+
+  localStorage.setItem('print_quote', JSON.stringify(printData));
+  window.open('/admin/invoice.html', '_blank');
 }
 
 // --- FINANCE LOGIC ---
@@ -461,11 +519,12 @@ async function saveTransaction(e) {
   };
 
   await save('transactions', data);
-  await loadAllData();
   updateUI();
   updateCharts();
   closeModal('modal-transaction');
   toast('Transaksi berhasil dicatat');
+
+  try { await loadAllData(); updateUI(); } catch(e){}
 }
 
 // --- MASTER DATA LOGIC ---
@@ -497,9 +556,11 @@ async function saveCustomer(e) {
     email: document.getElementById('c-email').value
   };
   await save('customers', data);
-  await loadAllData();
   updateUI();
   closeModal('modal-customer');
+  toast('Pelanggan berhasil disimpan');
+
+  try { await loadAllData(); updateUI(); } catch(e){}
 }
 
 function renderItems() {
@@ -533,9 +594,11 @@ async function saveItem(e) {
     specs: specsRaw.split(',').map(s => s.trim()).filter(Boolean)
   };
   await save('items', data);
-  await loadAllData();
   updateUI();
   closeModal('modal-item');
+  toast('Item berhasil disimpan');
+
+  try { await loadAllData(); updateUI(); } catch(e){}
 }
 
 function editItem(id) {
@@ -685,3 +748,117 @@ function updateDonutLegend() {
     `;
   });
 }
+
+// --- LOGO / MARQUEE MANAGEMENT LOGIC ---
+async function loadLogosAdmin() {
+  const container = document.getElementById('logo-grid-preview');
+  if (!container) return;
+  container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">Memuat daftar logo sponsor...</div>';
+  
+  try {
+    const res = await fetch('/api/logos');
+    const data = await res.json();
+    
+    container.innerHTML = '';
+    if (data.success && data.logos && data.logos.length > 0) {
+      data.logos.forEach(logo => {
+        const card = document.createElement('div');
+        card.className = 'logo-item-card';
+        card.style.cssText = 'background: #ffffff; border: 1px solid var(--border-color-subtle); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 0.75rem; box-shadow: var(--shadow-sm);';
+        
+        card.innerHTML = `
+          <div style="height: 60px; width: 100%; display: flex; align-items: center; justify-content: center;">
+            <img src="${logo.url}" alt="${logo.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+          </div>
+          <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-main); text-align: center; word-break: break-all; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${logo.name}
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: var(--danger); width: 100%;" onclick="deleteLogoFile('${logo.id}')">
+            <i class="ti ti-trash"></i> Hapus
+          </button>
+        `;
+        container.appendChild(card);
+      });
+    } else {
+      container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem 0;">Belum ada logo sponsor yang diupload. Gunakan tombol Upload di kanan atas.</div>';
+    }
+  } catch (err) {
+    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--danger);">Gagal memuat logo: ${err.message}</div>`;
+  }
+}
+
+async function uploadLogoFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  toast('Mengupload logo...', 'primary');
+  try {
+    const res = await fetch('/api/logos', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+      toast('Logo berhasil diupload!', 'success');
+      loadLogosAdmin();
+    } else {
+      toast('Gagal upload: ' + data.error, 'error');
+    }
+  } catch (err) {
+    toast('Error upload: ' + err.message, 'error');
+  }
+  input.value = '';
+}
+
+async function deleteLogoFile(filename) {
+  if (!confirm('Apakah Anda yakin ingin menghapus logo ini?')) return;
+  
+  toast('Menghapus logo...', 'primary');
+  try {
+    const res = await fetch(`/api/logos?filename=${encodeURIComponent(filename)}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+      toast('Logo berhasil dihapus', 'success');
+      loadLogosAdmin();
+    } else {
+      toast('Gagal menghapus: ' + data.error, 'error');
+    }
+  } catch (err) {
+    toast('Error hapus: ' + err.message, 'error');
+  }
+}
+
+async function uploadProductImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  toast('Mengupload gambar produk...', 'primary');
+  try {
+    const res = await fetch('/api/products/upload', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+
+    if (data.success && data.url) {
+      document.getElementById('i-img').value = data.url;
+      toast('Gambar produk berhasil diupload!', 'success');
+    } else {
+      toast('Gagal upload: ' + data.error, 'error');
+    }
+  } catch (err) {
+    toast('Error upload: ' + err.message, 'error');
+  }
+  input.value = '';
+}
+

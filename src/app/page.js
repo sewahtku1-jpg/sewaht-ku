@@ -25,64 +25,11 @@ import {
   X,
   Headset
 } from 'lucide-react';
-// Removed heavy 3D imports to improve performance
-const HeroVisual = () => {
-  return (
-    <div className="hero-visual-wrapper">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ 
-          opacity: 1, 
-          scale: 1,
-        }}
-        transition={{ 
-          opacity: { duration: 0.8 },
-          scale: { duration: 0.8 },
-        }}
-        className="hero-image-container"
-      >
-        <div className="hero-glow-light"></div>
-        <div className="hero-static-wrapper">
-          <motion.img 
-            src="/assets/baofeng.png" 
-            alt="Handy Talky Premium" 
-            className="hero-main-img"
-            animate={{ y: [0, -20, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            style={{ width: '100%', maxWidth: '350px', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.15))' }}
-          />
-        </div>
-        
-        {/* Floating elements for extra depth */}
-        <motion.div 
-          animate={{ y: [0, 15, 0], rotate: [0, 10, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          className="floating-element badge-premium"
-          style={{ top: '15%', right: '0%' }}
-        >
-          <Zap size={20} color="white" />
-          <span>Long Range</span>
-        </motion.div>
-        
-        <motion.div 
-          animate={{ y: [0, -15, 0], rotate: [0, -10, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="floating-element badge-teal"
-          style={{ bottom: '25%', left: '0%' }}
-        >
-          <Shield size={20} color="white" />
-          <span>Rugged Pro</span>
-        </motion.div>
-      </motion.div>
-    </div>
-  );
-};
 
 
 const productsData = [
   { id: 1, name: "Baofeng UV-5R", price: 35000, img: "/assets/baofeng.png", desc: "Dual-band hand-held transceiver with display function menu on the display 'LCD'.", specs: ["136-174 / 400-520MHz", "Up to 5km range", "Long battery life"] },
-  { id: 2, name: "Motorola GP328", price: 75000, img: "/assets/motorola.png", desc: "The practical radio solution for professionals who need to stay in touch.", specs: ["UHF/VHF", "Rugged design", "Clear audio quality"] },
-  { id: 3, name: "Hytera BD-505", price: 65000, img: "/assets/hytera.png", desc: "Digital radio with high performance, simple but professional usage.", specs: ["Digital/Analog mode", "Clearer voice", "Extended range"] }
+  { id: 2, name: "Motorola GP328", price: 75000, img: "/assets/motorola.png", desc: "The practical radio solution for professionals who need to stay in touch.", specs: ["UHF/VHF", "Rugged design", "Clear audio quality"] }
 ];
 
 import { toast } from 'sonner';
@@ -115,7 +62,7 @@ export default function LandingPage() {
             desc: item.desc || "Perangkat HT profesional dengan kualitas suara jernih.",
             specs: item.specs || ["Dual-band", "Range up to 5km", "Long battery"]
           }));
-          setProducts(mappedItems);
+          setProducts(mappedItems.slice(0, 2));
         }
       } catch (err) {
         console.error("Failed to fetch products from Sanity Cloud", err);
@@ -123,6 +70,22 @@ export default function LandingPage() {
     };
     
     fetchFromSanity();
+  }, []);
+
+  const [marqueeLogos, setMarqueeLogos] = useState([]);
+  useEffect(() => {
+    const fetchLogos = async () => {
+      try {
+        const res = await fetch('/api/logos');
+        const data = await res.json();
+        if (data.success && data.logos) {
+          setMarqueeLogos(data.logos);
+        }
+      } catch (err) {
+        console.error('Failed to fetch marquee logos', err);
+      }
+    };
+    fetchLogos();
   }, []);
 
   // Checkout states
@@ -313,98 +276,56 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <AnimatePresence mode="wait">
+      <div className="view-home-wrapper">
         {view === 'home' ? (
-          <motion.div key="home" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}>
+          <div key="home">
             <header className="hero-modern">
-              <div className="hero-bg-img"></div>
               <div className="container">
                 <div className="hero-grid">
-                  <motion.div 
-                    initial={{ opacity: 0, x: -40 }} 
-                    animate={{ opacity: 1, x: 0 }} 
-                    transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
-                    className="hero-content"
-                  >
+                  <div className="hero-content" suppressHydrationWarning>
                     {/* Label badge */}
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-                      className="hero-tag-wrapper"
-                    >
+                    <div className="hero-tag-wrapper">
                       <span className="hero-tag">
-                        <Radio size={12} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
-                        Penyewaan HT No. 1 di Indonesia
+                        <Radio size={12} />
+                        <span>Penyewaan Walky Talky</span>
                       </span>
-                    </motion.div>
+                    </div>
 
                     {/* Title — no glass box wrapper, cleaner standalone */}
-                    <motion.h1
-                      className="hero-title"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.15, duration: 0.65, ease: [0.23, 1, 0.32, 1] }}
-                    >
-                      Komunikasi <span className="text-highlight">Lancar</span>,<br />
-                      Event Makin <span className="text-highlight">Besar</span>.
-                    </motion.h1>
+                    <h1 className="hero-title" suppressHydrationWarning>
+                      <span>Komunikasi </span>
+                      <span className="text-highlight">Lancar</span>
+                      <span>,</span>
+                      <br />
+                      <span>Event Makin </span>
+                      <span className="text-highlight">Besar</span>
+                      <span>.</span>
+                    </h1>
 
-                    <motion.p
-                      className="hero-subtitle"
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.22, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-                    >
-                      Solusi penyewaan Handy Talky premium untuk koordinasi tim yang presisi.
-                      Teknologi terbaru, jangkauan terluas, dan pelayanan 24/7.
-                    </motion.p>
-
-                    <motion.div
-                      className="hero-actions"
-                      initial={{ opacity: 0, y: 14 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
-                    >
+                    <div className="hero-actions">
                       <button className="btn-vibrant btn-primary" onClick={() => setView('checkout')}>
-                        Mulai Sewa Sekarang <ArrowRight size={18} />
+                        <span>Mulai Sewa Sekarang</span> <ArrowRight size={18} />
                       </button>
                       <a href="#produk" className="btn-vibrant btn-outline">
-                        Lihat Produk
+                        <span>Lihat Produk</span>
                       </a>
-                    </motion.div>
+                    </div>
 
-                    {/* Stats row */}
-                    <motion.div
-                      className="hero-stats"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4, duration: 0.6 }}
-                    >
-                      {[
-                        { num: '500+', label: 'Event Sukses' },
-                        { num: '1000+', label: 'Unit Tersedia' },
-                        { num: '24/7', label: 'Support' },
-                      ].map((s, i) => (
-                        <React.Fragment key={i}>
-                          {i > 0 && <div className="stat-divider" />}
-                          <div className="stat-item">
-                            <span className="stat-num">{s.num}</span>
-                            <span className="stat-label">{s.label}</span>
-                          </div>
-                        </React.Fragment>
-                      ))}
-                    </motion.div>
-                  </motion.div>
+                    {/* Continuous Logo Marquee */}
+                    <div className="marquee-container">
+                      <div className="marquee-eyebrow">Dipercaya & Mensponsori Berbagai Event Besar</div>
+                      <div className="marquee-track-wrapper">
+                        <div className="marquee-track">
+                          {marqueeLogos.concat(marqueeLogos, marqueeLogos, marqueeLogos).map((logo, idx) => (
+                            <div key={idx} className="marquee-logo-item">
+                              <img src={logo.url} alt={logo.name} className="marquee-img" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                  <motion.div
-                    className="hero-visual"
-                    initial={{ opacity: 0, scale: 0.92 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2, duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
-                  >
-                    <HeroVisual />
-                  </motion.div>
                 </div>
               </div>
             </header>
@@ -431,7 +352,7 @@ export default function LandingPage() {
                   <p className="section-desc">Perangkat berkualitas tinggi untuk jangkauan sinyal tanpa batas.</p>
                 </div>
                 <div className="product-grid">
-                  {products.map((p, idx) => (
+                  {products.slice(0, 2).map((p, idx) => (
                     <motion.div 
                       key={p.id}
                       initial={{ opacity: 0, y: 40 }}
@@ -494,23 +415,18 @@ export default function LandingPage() {
               </div>
               <div className="container" style={{ position: 'relative', zIndex: 1 }}>
                 <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'auto 0.7fr 0.7fr 1.2fr', gap: '1.5rem', justifyContent: 'start' }}>
-                  <div className="footer-logo-col" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <div className="logo-box" style={{ marginLeft: '-1rem' }}>
+                  <div className="footer-logo-col">
+                    <div className="logo-box footer-logo-wrapper">
                       <Image 
                         src="/assets/logo.png" 
                         alt="Sewa HT Ku Logo" 
                         width={600} 
                         height={220} 
+                        className="footer-logo-img"
                         style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }} 
                       />
                     </div>
-                    <div className="footer-social-col" style={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      gap: '0.75rem',
-                      borderLeft: '1px solid rgba(255,255,255,0.1)',
-                      paddingLeft: '1.5rem'
-                    }}>
+                    <div className="footer-social-col">
                       <div className="social-badge-premium" style={{ width: '36px', height: '36px' }}><Instagram size={16} /></div>
                       <div className="social-badge-premium" style={{ width: '36px', height: '36px' }}><Facebook size={16} /></div>
                       <div className="social-badge-premium" style={{ width: '36px', height: '36px' }}><Twitter size={16} /></div>
@@ -552,7 +468,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </footer>
-          </motion.div>
+          </div>
         ) : (
           <motion.div key="checkout" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }} style={{ paddingTop: '160px' }}>
             <div className="container" style={{ maxWidth: '1200px' }}>
@@ -639,7 +555,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 }

@@ -65,6 +65,10 @@
       <i class="ti ti-box"></i>
       <span>Barang / Jasa</span>
     </a>
+    <a href="#" class="nav-item" data-page="logos" onclick="navigateTo('logos')">
+      <i class="ti ti-photo"></i>
+      <span>Logo Sponsor</span>
+    </a>
 
     <div class="nav-section-label">EKSTERNAL</div>
     <a href="/" class="nav-item" title="Kembali ke Landing Page">
@@ -322,7 +326,7 @@
         <h1 class="page-title">Katalog Barang & Jasa</h1>
         <p class="page-sub">Inventaris barang sewa dan jasa layanan</p>
       </div>
-      <button class="btn btn-primary" onclick="openModal('modal-item')"><i class="ti ti-package"></i> Tambah Item</button>
+      <button class="btn btn-primary" onclick="document.getElementById('form-item').reset(); document.getElementById('i-edit-id').value=''; openModal('modal-item')"><i class="ti ti-package"></i> Tambah Item</button>
     </div>
     <div class="section-card">
       <div class="table-wrap">
@@ -338,6 +342,26 @@
           </thead>
           <tbody id="tbody-items"></tbody>
         </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- PAGE: LOGOS -->
+  <main class="page" id="page-logos">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Logo Sponsor & Marquee</h1>
+        <p class="page-sub">Kelola daftar logo berjalan di halaman depan website</p>
+      </div>
+      <div class="header-actions">
+        <label class="btn btn-primary" style="cursor: pointer;">
+          <i class="ti ti-upload"></i> Upload Logo Baru
+          <input type="file" id="logo-uploader" accept="image/*" style="display: none;" onchange="uploadLogoFile(this)" />
+        </label>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="logo-grid-preview" id="logo-grid-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; padding: 1.5rem;">
       </div>
     </div>
   </main>
@@ -528,7 +552,16 @@
           <div class="f-group"><label>Harga Sewa / Hari</label><input type="number" id="i-price" required></div>
         </div>
         <div class="f-group"><label>Deskripsi (Untuk Website)</label><textarea id="i-desc" rows="2" placeholder="Deskripsi singkat produk..."></textarea></div>
-        <div class="f-group"><label>Gambar URL / Path</label><input type="text" id="i-img" placeholder="/assets/baofeng.png"></div>
+        <div class="f-group">
+          <label style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Gambar URL / Path</span>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer; padding:0.25rem 0.5rem; font-size:0.75rem;">
+              <i class="ti ti-upload"></i> Upload File
+              <input type="file" accept="image/*" style="display:none;" onchange="uploadProductImage(this)" />
+            </label>
+          </label>
+          <input type="text" id="i-img" placeholder="/assets/baofeng.png">
+        </div>
         <div class="f-group"><label>Spesifikasi (Pisahkan dengan koma)</label><input type="text" id="i-specs" placeholder="Dual-band, Jarak 5km, Baterai Awet"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-ghost" onclick="closeModal('modal-item')">Batal</button>
@@ -563,6 +596,6 @@
 <!-- TOAST -->
 <div id="toast-box"></div>
 
-<script src="/admin/app.js"></script>
+<script src="/admin/app.js?v=2"></script>
 </body>
 </html>
