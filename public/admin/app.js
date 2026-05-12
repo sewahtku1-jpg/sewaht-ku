@@ -338,7 +338,21 @@ async function saveQuotation(e) {
   e.preventDefault();
   const id = document.getElementById('q-edit-id').value || 'ORD-' + Date.now().toString().slice(-6);
   const custName = document.getElementById('q-cust-name').value;
-  const cust = state.customers.find(c => c.name === custName) || { name: custName };
+  let cust = state.customers.find(c => c.name === custName);
+  
+  // Auto-save new customer if not exists
+  if (!cust && custName.trim() !== '') {
+    cust = {
+      id: 'C-' + Math.floor(Math.random()*10000),
+      name: custName,
+      address: document.getElementById('q-cust-address').value || '-',
+      phone: '-',
+      email: '-'
+    };
+    await save('customers', cust);
+  } else if (!cust) {
+    cust = { name: custName };
+  }
 
   const data = {
     id,
