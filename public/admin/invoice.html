@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cetak Invoice - Sewa HT KU</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    
+    :root {
+      --primary: #1A56DB;
+      --success: #16A34A;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      background: #f3f4f6;
+      font-size: 11px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    /* A4 Paper Styling */
+    .invoice-box {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 20px auto;
+      background: white;
+      padding: 14mm 18mm;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 5mm;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+    }
+
+    .company-name {
+      font-size: 16px;
+      font-weight: 800;
+      margin: 0 0 2px;
+      color: #000;
+    }
+
+    .company-address {
+      font-size: 10px;
+      color: var(--text-light);
+      margin: 0;
+    }
+
+    .invoice-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .header-line {
+      height: 3px;
+      background-color: var(--primary);
+      width: 100%;
+      margin-bottom: 8mm;
+    }
+
+    /* Info Section */
+    .info-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8mm;
+    }
+
+    .info-left {
+      width: 50%;
+    }
+
+    .info-right {
+      width: 45%;
+    }
+
+    .info-label {
+      font-size: 10px;
+      color: var(--text-light);
+      margin-bottom: 2px;
+    }
+
+    .info-value {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .info-value-normal {
+      font-size: 11px;
+      margin-bottom: 8px;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      margin-bottom: 4px;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 5mm;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 700;
+      padding: 8px;
+      text-align: center;
+      font-size: 10px;
+      border: 1px solid var(--border);
+    }
+
+    td {
+      padding: 8px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+    }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .text-left { text-align: left; }
+
+    tr.empty-row td {
+      height: 25px;
+    }
+
+    /* Summary Section */
+    .summary-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15mm;
+    }
+
+    .notes {
+      width: 50%;
+    }
+
+    .totals {
+      width: 40%;
+    }
+
+    .totals table {
+      border: none;
+      margin: 0;
+    }
+
+    .totals td {
+      padding: 6px 8px;
+    }
+
+    .totals tr td:first-child {
+      text-align: right;
+      color: var(--text-light);
+      border-right: none;
+    }
+
+    .totals tr td:last-child {
+      text-align: right;
+      font-weight: 600;
+      border-left: none;
+    }
+
+    .grand-total td {
+      background-color: var(--primary);
+      color: white !important;
+      font-weight: 800 !important;
+      font-size: 12px;
+    }
+
+    /* Footer Payment Info */
+    .footer-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10mm;
+    }
+
+    .payment-procedure {
+      width: 60%;
+      color: var(--text-light);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .signature {
+      width: 30%;
+      text-align: right;
+      color: var(--text);
+    }
+
+    .bottom-line {
+      height: 1px;
+      background-color: var(--primary);
+      width: 100%;
+      margin-bottom: 2mm;
+    }
+
+    .thank-you {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 9px;
+    }
+
+    /* Watermark */
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 120px;
+      font-weight: 900;
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .watermark.lunas { color: var(--success); }
+    .watermark.dp { color: var(--primary); }
+
+    /* Print Specifics */
+    @media print {
+      body { background: white; }
+      .invoice-box {
+        margin: 0;
+        box-shadow: none;
+        width: 100%;
+        min-height: 100%;
+      }
+      .no-print { display: none !important; }
+    }
+
+    .btn-print {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="btn-print no-print" onclick="window.print()">Cetak Invoice Sekarang</button>
+
+  <div class="invoice-box" id="invoice-content">
+    <!-- Watermark injected here -->
+    
+    <div class="header">
+      <div class="header-left">
+        <img src="/admin/sewahtku_logo.png" alt="Logo" class="logo" onerror="this.src='https://ui-avatars.com/api/?name=Sewa+HT+Ku&background=1A56DB&color=fff'">
+        <div>
+          <h1 class="company-name">Sewa HT KU</h1>
+          <p class="company-address">Griya Satria Jingga E2/21 RT003/014 Ragajaya, Citayam</p>
+          <p class="company-address">083195474510 | 083807961536</p>
+        </div>
+      </div>
+      <h2 class="invoice-title">INVOICE</h2>
+    </div>
+
+    <div class="header-line"></div>
+
+    <div class="info-section">
+      <div class="info-left">
+        <div class="info-label">Kepada Yth:</div>
+        <div class="info-value" id="c-name" style="font-size: 14px;">-</div>
+        <div class="info-value-normal" id="c-address">-</div>
+        <div class="info-value-normal" id="c-phone">-</div>
+      </div>
+      <div class="info-right">
+        <div class="grid-2">
+          <span class="info-label">No. Invoice</span>
+          <span class="info-value-normal" style="font-weight:700">: <span id="q-no">-</span></span>
+        </div>
+        <div class="grid-2">
+          <span class="info-label">Status</span>
+          <span class="info-value-normal" style="font-weight:700">: <span id="q-status" style="color: var(--primary)">-</span></span>
+        </div>
+        <div class="grid-2">
+          <span class="info-label">Event</span>
+          <span class="info-value-normal">: <span id="q-event">-</span></span>
+        </div>
+        <div class="grid-2">
+          <span class="info-label">Lokasi</span>
+          <span class="info-value-normal">: <span id="q-location">-</span></span>
+        </div>
+        <div class="grid-2">
+          <span class="info-label">Loading</span>
+          <span class="info-value-normal">: <span id="q-loading">-</span></span>
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th width="5%">No</th>
+          <th width="35%" class="text-left">Nama Produk</th>
+          <th width="10%">Jumlah</th>
+          <th width="10%">Satuan</th>
+          <th width="10%">Hari</th>
+          <th width="15%" class="text-right">Harga Sewa</th>
+          <th width="15%" class="text-right">Total Harga</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <!-- Rows injected here -->
+      </tbody>
+    </table>
+
+    <div class="summary-section">
+      <div class="notes">
+        <div style="font-weight: 700; margin-bottom: 4px;">Catatan:</div>
+        <div id="q-note" style="color: var(--text-light); margin-bottom: 15px;">-</div>
+        
+        <div style="font-weight: 700; font-size: 12px;">DP: <span id="q-dp">Rp 0</span></div>
+      </div>
+      
+      <div class="totals">
+        <table>
+          <tr>
+            <td>Total</td>
+            <td id="t-sub">Rp 0</td>
+          </tr>
+          <tr>
+            <td>Discount</td>
+            <td id="t-disc">Rp 0</td>
+          </tr>
+          <tr>
+            <td>Total PPN</td>
+            <td id="t-ppn">Rp 0</td>
+          </tr>
+          <tr>
+            <td>PPh</td>
+            <td id="t-pph">Rp 0</td>
+          </tr>
+          <tr class="grand-total">
+            <td>Grand Total</td>
+            <td id="t-grand">Rp 0</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer-info">
+      <div class="payment-procedure">
+        <div style="font-weight: 700; margin-bottom: 4px; color:var(--text)">Prosedur Pembayaran:</div>
+        <ol style="margin: 0 0 10px 0; padding-left: 15px;">
+          <li>Tahap 1: DP Minimal 50%, Maksimal H-3</li>
+          <li>Tahap 2: Pelunasan 100% saat barang diantar/diterima</li>
+          <li>Untuk pengiriman di luar jangkauan Citayam dikenakan biaya ongkir sesuai harga Gosend/kesepakatan bersama.</li>
+          <li>Payment/Pembayaran diproses melalui rekening yang ada di bawah ini:</li>
+        </ol>
+        <div style="margin-left: 15px; font-weight: 600; color:var(--text)">
+          Shopeepay : 083807961536 a.n Januba Arifah<br>
+          BRI : 053801085867505 a.n Januba Arifah
+        </div>
+      </div>
+      <div class="signature">
+        Hormat kami,
+        <br><br><br><br>
+        <strong>Januba Arifah</strong><br>
+        Sewa HT KU
+      </div>
+    </div>
+
+    <div class="bottom-line"></div>
+    <div class="thank-you">Terima kasih atas kepercayaan Anda menggunakan layanan <b>Sewa HT KU</b></div>
+
+  </div>
+
+  <script>
+    function toIDR(num) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
+    }
+    function toIDDate(str) {
+      if (!str) return '-';
+      const d = new Date(str);
+      return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    window.onload = () => {
+      try {
+        const data = JSON.parse(localStorage.getItem('print_quote'));
+        if (!data) {
+          alert('Data tidak ditemukan!');
+          return;
+        }
+
+        // Render Watermark
+        const box = document.getElementById('invoice-content');
+        if (data.status === 'Lunas' || data.status === 'DP') {
+          const wm = document.createElement('div');
+          wm.className = `watermark ${data.status.toLowerCase()}`;
+          wm.textContent = data.status.toUpperCase();
+          box.prepend(wm);
+        }
+        if (data.status === 'Lunas') {
+          document.getElementById('q-status').style.color = '#16A34A';
+        }
+
+        // Header Info
+        document.getElementById('c-name').textContent = data.customer?.name || '-';
+        document.getElementById('c-address').textContent = data.customer?.address || '-';
+        document.getElementById('c-phone').textContent = data.customer?.phone || '-';
+        
+        document.getElementById('q-no').textContent = data.invoiceNo || data.id || '-';
+        document.getElementById('q-status').textContent = data.status || '-';
+        document.getElementById('q-event').textContent = data.event || '-';
+        document.getElementById('q-location').textContent = data.location || '-';
+        document.getElementById('q-loading').textContent = toIDDate(data.date);
+
+        // Table
+        const tbody = document.getElementById('table-body');
+        let html = '';
+        (data.items || []).forEach((it, i) => {
+          html += `
+            <tr>
+              <td class="text-center">${i + 1}</td>
+              <td>${it.name || '-'}</td>
+              <td class="text-center">${it.qty || 0}</td>
+              <td class="text-center">${it.unit || 'Unit'}</td>
+              <td class="text-center">${it.days || 0}</td>
+              <td class="text-right">${toIDR(it.price)}</td>
+              <td class="text-right">${toIDR(it.total)}</td>
+            </tr>
+          `;
+        });
+        
+        // Add empty rows to match python style (8 empty rows)
+        for (let i = 0; i < Math.max(8 - (data.items?.length || 0), 2); i++) {
+          html += `<tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+        }
+        tbody.innerHTML = html;
+
+        // Totals
+        document.getElementById('q-note').textContent = data.note || '-';
+        document.getElementById('q-dp').textContent = toIDR(data.dpAmount || 0);
+
+        const sub = data.subTotal || 0;
+        const disc = data.discountAmount || 0;
+        const afterDisc = sub - disc;
+        const ppn = (data.ppnPct || 0) / 100 * afterDisc;
+        const pph = (data.pphPct || 0) / 100 * afterDisc;
+        
+        document.getElementById('t-sub').textContent = toIDR(sub);
+        document.getElementById('t-disc').textContent = toIDR(disc);
+        document.getElementById('t-ppn').textContent = toIDR(afterDisc + ppn);
+        document.getElementById('t-pph').textContent = toIDR(pph);
+        document.getElementById('t-grand').textContent = toIDR(data.grandTotal || 0);
+
+        // Trigger Print Automatically
+        setTimeout(() => {
+          window.print();
+        }, 500);
+
+      } catch (err) {
+        console.error(err);
+        alert('Gagal memuat format Invoice');
+      }
+    };
+  </script>
+</body>
+</html>

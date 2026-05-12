@@ -278,6 +278,7 @@ function renderQuotations() {
         <td><strong>${toIDR(q.grandTotal)}</strong></td>
         <td><span class="badge ${getBadgeColor(q.status)}">${q.status}</span></td>
         <td>
+          <button class="btn-text" style="color:#1A56DB" onclick="printInvoice('${q.id}')"><i class="ti ti-printer"></i> Cetak</button>
           <button class="btn-text" onclick="editQuote('${q.id}')">Edit</button>
           <button class="btn-text" style="color:var(--danger)" onclick="deleteData('quotations', '${q.id}')">Hapus</button>
         </td>
