@@ -10,8 +10,7 @@ let state = {
 };
 
 function initSanity() {
-  const defaultToken = 'skJv4LPgTaoktDrUSNKIPD7fBndC0JYFrzaG364rRg9Xp6BV4Aw46D3fpTb4qAf1jfuD1F0KY0KS9sss6mrn0vpvtQalmVBOO6rGK1WWgD6Djk2rJ6Arxtolk1DU0JBeuIwDg9DKLMhOVZ0l4SAClvGD9GlkDCxpx2LqnFSPASRsey8vBH8H';
-  const token = localStorage.getItem('SANITY_API_TOKEN') || defaultToken;
+  const token = 'skJv4LPgTaoktDrUSNKIPD7fBndC0JYFrzaG364rRg9Xp6BV4Aw46D3fpTb4qAf1jfuD1F0KY0KS9sss6mrn0vpvtQalmVBOO6rGK1WWgD6Djk2rJ6Arxtolk1DU0JBeuIwDg9DKLMhOVZ0l4SAClvGD9GlkDCxpx2LqnFSPASRsey8vBH8H';
   sanityClient = window.SanityClient.createClient({
     projectId: 'lzgftrin',
     dataset: 'production',
