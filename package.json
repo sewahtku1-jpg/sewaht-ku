@@ -1,0 +1,24 @@
+{
+  "name": "client_next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@sanity/client": "^7.22.0",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^0.475.0",
+    "next": "16.2.4",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "sonner": "^2.0.7"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4"
+  }
+}
