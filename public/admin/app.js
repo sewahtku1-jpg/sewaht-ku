@@ -10,9 +10,9 @@ let state = {
 };
 
 function initSanity() {
-  const token = 'skJv4LPgTaoktDrUSNKIPD7fBndC0JYFrzaG364rRg9Xp6BV4Aw46D3fpTb4qAf1jfuD1F0KY0KS9sss6mrn0vpvtQalmVBOO6rGK1WWgD6Djk2rJ6Arxtolk1DU0JBeuIwDg9DKLMhOVZ0l4SAClvGD9GlkDCxpx2LqnFSPASRsey8vBH8H';
+  const token = 'skMEf3YuZ33zdCCc2WmvpVIpddQKwV37yr7CgElSrZANSqQHxm4tGCYBEkgpf0qM2VOtcghewXPQFXQhH8ji9z2PkFRSBs58zWktfpMF2fgcECATQWXXJzTVK7Dqaf7tP7U8lAiEJp13z5kXwTB9wrqEIAsaLekpWvD8FpvZTnS2xxIBXcqD';
   sanityClient = window.SanityClient.createClient({
-    projectId: 'lzgftrin',
+    projectId: 't787jxnr',
     dataset: 'production',
     useCdn: false,
     apiVersion: '2023-05-03',
