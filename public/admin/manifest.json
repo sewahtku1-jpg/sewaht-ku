@@ -2,20 +2,20 @@
   "name": "SewaHTku Admin Panel",
   "short_name": "SewaHTku",
   "description": "Aplikasi Manajemen Kuotasi, Invoice & Arus Kas Sewa HT Ku",
-  "start_url": "/admin/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0f172a",
   "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "/admin/sewahtku_logo.png",
+      "src": "./sewahtku_logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/admin/sewahtku_logo.png",
+      "src": "./sewahtku_logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
