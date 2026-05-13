@@ -10,7 +10,7 @@ let state = {
 };
 
 function initSanity() {
-  const token = 'skMEf3YuZ33zdCCc2WmvpVIpddQKwV37yr7CgElSrZANSqQHxm4tGCYBEkgpf0qM2VOtcghewXPQFXQhH8ji9z2PkFRSBs58zWktfpMF2fgcECATQWXXJzTVK7Dqaf7tP7U8lAiEJp13z5kXwTB9wrqEIAsaLekpWvD8FpvZTnS2xxIBXcqD';
+  const token = 'sk12KKcHQ008Btj8ev0F1gq0B1DR9QDZRABjmEvLUibhtkTeSP0DmWP9IFe9LJPxduB4fBwvzNjeHvIaWwbwNImCWxeSm9DlUp5YLEhxbYqlimww9hnWgx2q6vKqvR3ot97d66nvJMmjgahzKM0svYiyoy7gzNJ4gfF0smazGOBRCWKMj7DT';
   sanityClient = window.SanityClient.createClient({
     projectId: 't787jxnr',
     dataset: 'production',
