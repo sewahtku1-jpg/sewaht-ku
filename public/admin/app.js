@@ -81,9 +81,43 @@ async function getAll(storeName) {
   try { localData = JSON.parse(localStorage.getItem('shk_' + storeName)) || []; } catch(e){}
 
   try {
-    const docs = await sanityClient.fetch(`*[_type == "${type}"]`);
+    let query = `*[_type == "${type}"]`;
+    if (type === 'quotation') {
+      query = `*[_type == "quotation"]{..., customer->, items[]{..., itemRef->}}`;
+    }
+    const docs = await sanityClient.fetch(query);
     if (docs && docs.length > 0) {
-      const cloudData = docs.map(d => ({ ...d, id: d._id }));
+      const cloudData = docs.map(d => {
+        let mapped = { ...d, id: d._id };
+        if (type === 'quotation') {
+          // Reconstruct populated customer object compatible with local state
+          const c = d.customer || {};
+          mapped.customer = {
+            ...c,
+            id: c._id || c.id || 'C-Unknown',
+            name: c.name || 'Unknown Customer',
+            address: c.address || '-',
+            phone: c.phone || '-',
+            email: c.email || '-'
+          };
+          // Reconstruct populated items array compatible with local state
+          if (mapped.items && Array.isArray(mapped.items)) {
+            mapped.items = mapped.items.map(it => {
+              const itemObj = it.itemRef || {};
+              return {
+                ...it,
+                id: itemObj._id || itemObj.id || it.id,
+                name: itemObj.name || it.name || 'Item',
+                unit: itemObj.unit || it.unit || 'Unit',
+                price: it.price || itemObj.price || 0,
+                total: it.total || (it.qty * it.days * (it.price || itemObj.price || 0)) || 0,
+                desc: itemObj.desc || it.desc || ''
+              };
+            });
+          }
+        }
+        return mapped;
+      });
       try { localStorage.setItem('shk_' + storeName, JSON.stringify(cloudData)); } catch(e){}
       return cloudData;
     }
@@ -118,12 +152,41 @@ async function save(storeName, data) {
   try { localStorage.setItem('shk_' + storeName, JSON.stringify(state[storeName])); } catch(e){}
 
   // 2. Sync to Sanity Cloud gracefully in the background
-  const sanityDoc = {
+  let sanityDoc = {
     ...preparedData,
     _type: type,
     _id: data.id || data._id
   };
   delete sanityDoc.id;
+
+  if (type === 'quotation') {
+    // Convert populated customer object to Sanity reference object
+    if (preparedData.customer) {
+      const custId = preparedData.customer.id || preparedData.customer._id || preparedData.customer._ref;
+      if (custId) {
+        sanityDoc.customer = {
+          _type: 'reference',
+          _ref: custId
+        };
+      } else {
+        delete sanityDoc.customer;
+      }
+    }
+    // Convert items array to reference format containing itemRef field
+    if (preparedData.items && Array.isArray(preparedData.items)) {
+      sanityDoc.items = preparedData.items.map(it => {
+        const itemId = it.id || it.itemRef?._ref || it.itemRef?._id;
+        return {
+          _key: it._key || Math.random().toString(36).substring(7),
+          itemRef: itemId ? { _type: 'reference', _ref: itemId } : undefined,
+          qty: Number(it.qty) || 1,
+          days: Number(it.days) || 1,
+          price: Number(it.price) || 0,
+          total: Number(it.total) || 0
+        };
+      });
+    }
+  }
 
   try {
     const res = await sanityClient.createOrReplace(sanityDoc);
