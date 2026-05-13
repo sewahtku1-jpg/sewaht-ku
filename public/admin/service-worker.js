@@ -1,9 +1,10 @@
-const CACHE_NAME = 'quotepro-v2';
+const CACHE_NAME = 'quotepro-v3';
 const ASSETS = [
-  'index.html',
-  'style.css',
-  'app.js',
-  'manifest.json'
+  '/admin/index.html',
+  '/admin/style.css',
+  '/admin/app.js',
+  '/admin/manifest.json',
+  '/admin/sewahtku_logo.png'
 ];
 
 self.addEventListener('install', (e) => {

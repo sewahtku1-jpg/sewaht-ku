@@ -1,21 +1,24 @@
 {
-  "name": "QuotePro Advanced",
-  "short_name": "QuotePro",
-  "description": "Professional Price Quotation & Finance Manager",
-  "start_url": "index.html",
+  "name": "SewaHTku Admin Panel",
+  "short_name": "SewaHTku",
+  "description": "Aplikasi Manajemen Kuotasi, Invoice & Arus Kas Sewa HT Ku",
+  "start_url": "/admin/index.html",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#0f172a",
-  "theme_color": "#2563eb",
+  "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "https://cdn.pixabay.com/photo/2017/01/31/13/14/check-2023920_960_720.png",
+      "src": "/admin/sewahtku_logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://cdn.pixabay.com/photo/2017/01/31/13/14/check-2023920_960_720.png",
+      "src": "/admin/sewahtku_logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

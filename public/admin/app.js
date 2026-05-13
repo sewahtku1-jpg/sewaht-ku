@@ -12,7 +12,7 @@ let state = {
 function initSanity() {
   const token = 'sk12KKcHQ008Btj8ev0F1gq0B1DR9QDZRABjmEvLUibhtkTeSP0DmWP9IFe9LJPxduB4fBwvzNjeHvIaWwbwNImCWxeSm9DlUp5YLEhxbYqlimww9hnWgx2q6vKqvR3ot97d66nvJMmjgahzKM0svYiyoy7gzNJ4gfF0smazGOBRCWKMj7DT';
   sanityClient = window.SanityClient.createClient({
-    projectId: 't787jxnr',
+    projectId: 'lzgftrin',
     dataset: 'production',
     useCdn: false,
     apiVersion: '2023-05-03',
@@ -925,3 +925,52 @@ async function uploadProductImage(input) {
   input.value = '';
 }
 
+// --- ANDROID PWA INSTALLER LOGIC ---
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Mencegah Chrome memunculkan mini-infobar secara otomatis
+  e.preventDefault();
+  // Menyimpan event agar bisa dipicu nanti
+  deferredPrompt = e;
+  // Menambahkan efek glow/animasi ke tombol install
+  const installBtn = document.getElementById('install-apk-btn');
+  if (installBtn) {
+    installBtn.classList.add('ready-install');
+    installBtn.style.display = 'inline-flex';
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  toast('Aplikasi Android berhasil diinstal ke Layar Beranda!', 'success');
+  const installBtn = document.getElementById('install-apk-btn');
+  if (installBtn) {
+    installBtn.innerHTML = '<i class="ti ti-check"></i> <span class="hide-mobile">Terinstal</span>';
+    installBtn.classList.remove('ready-install');
+    installBtn.classList.add('installed-badge');
+  }
+});
+
+function triggerAndroidInstall() {
+  if (deferredPrompt) {
+    // Menampilkan prompt instalasi native Android
+    deferredPrompt.prompt();
+    // Menunggu respons pengguna
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    // Fallback instruksi jika browser/perangkat belum mendukung prompt otomatis
+    // atau aplikasi sudah terinstal
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      toast('Aplikasi Android sudah aktif & berjalan.', 'success');
+    } else {
+      alert('Untuk menginstal Aplikasi Android:\n\n1. Ketuk ikon menu tiga titik (⋮) di pojok kanan atas browser Chrome/Android Anda.\n2. Pilih menu "Tambahkan ke Layar Utama" atau "Instal Aplikasi".\n3. Aplikasi SewaHTku siap digunakan langsung dari layar utama HP Anda!');
+    }
+  }
+}

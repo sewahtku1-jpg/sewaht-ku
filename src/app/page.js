@@ -45,7 +45,7 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchFromSanity = async () => {
       try {
-        const PROJECT_ID = 't787jxnr';
+        const PROJECT_ID = 'lzgftrin';
         const DATASET = 'production';
         const QUERY = encodeURIComponent('*[_type == "item"]');
         const url = `https://${PROJECT_ID}.api.sanity.io/v2023-05-03/data/query/${DATASET}?query=${QUERY}`;
