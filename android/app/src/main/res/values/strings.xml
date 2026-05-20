@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">SewaHTku Admin</string>
-    <string name="title_activity_main">SewaHTku Admin</string>
+    <string name="app_name">SEWAHTKU</string>
+    <string name="title_activity_main">SEWAHTKU</string>
     <string name="package_name">com.sewahtku.admin</string>
     <string name="custom_url_scheme">com.sewahtku.admin</string>
 </resources>

@@ -1,6 +1,3 @@
-// --- CONFIG & DATABASE (Sanity Cloud) ---
-let sanityClient;
-
 // Data State (Temporary while loading from DB)
 let state = {
   quotations: [],
@@ -9,38 +6,10 @@ let state = {
   transactions: [] // Finance records (Income/Expense)
 };
 
-function initSanity() {
-  const token = 'sk12KKcHQ008Btj8ev0F1gq0B1DR9QDZRABjmEvLUibhtkTeSP0DmWP9IFe9LJPxduB4fBwvzNjeHvIaWwbwNImCWxeSm9DlUp5YLEhxbYqlimww9hnWgx2q6vKqvR3ot97d66nvJMmjgahzKM0svYiyoy7gzNJ4gfF0smazGOBRCWKMj7DT';
-  sanityClient = window.SanityClient.createClient({
-    projectId: 'lzgftrin',
-    dataset: 'production',
-    useCdn: false,
-    apiVersion: '2023-05-03',
-    token: token
-  });
-  
-  // update footer status
-  const stText = document.querySelector('.status-text');
-  if (stText) {
-    stText.textContent = token ? 'Database: Sanity Cloud (Online)' : 'Database: Sanity (Read Only)';
-  }
-}
-
-function saveSettings() {
-  const token = document.getElementById('s-api-token').value;
-  localStorage.setItem('SANITY_API_TOKEN', token.trim());
-  initSanity();
-  closeModal('modal-settings');
-  toast('Token Sanity berhasil disimpan!');
-}
-
 // --- INITIALIZE DATABASE ---
 function initDB() {
-  initSanity();
-  // populate token input if exists
-  const tInput = document.getElementById('s-api-token');
-  if (tInput) tInput.value = localStorage.getItem('SANITY_API_TOKEN') || '';
-  
+  const stText = document.querySelector('.status-text');
+  if (stText) stText.textContent = 'Database: Neon PostgreSQL (Active)';
   return loadAllData();
 }
 
@@ -50,8 +19,7 @@ async function loadAllData() {
   state.items = await getAll('items');
   state.transactions = await getAll('transactions');
   
-  // If first time/empty cloud, load sample data
-  if (state.items.length === 0 && sanityClient.config().token) {
+  if (state.items.length === 0) {
     await seedData();
   }
 }
@@ -71,77 +39,22 @@ async function seedData() {
   state.items = sampleItems;
 }
 
-// --- DB HELPERS (Sanity CRUD) ---
+// --- DB HELPERS (Neon CRUD via Next.js API) ---
 async function getAll(storeName) {
-  const typeMap = { quotations: 'quotation', customers: 'customer', items: 'item', transactions: 'transaction' };
-  const type = typeMap[storeName] || storeName;
-  
-  // Attempt to load from localStorage first as stable offline baseline
-  let localData = [];
-  try { localData = JSON.parse(localStorage.getItem('shk_' + storeName)) || []; } catch(e){}
-
   try {
-    let query = `*[_type == "${type}"]`;
-    if (type === 'quotation') {
-      query = `*[_type == "quotation"]{..., customer->, items[]{..., itemRef->}}`;
+    const res = await fetch(`/api/admin/db?store=${storeName}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data;
     }
-    const docs = await sanityClient.fetch(query);
-    if (docs && docs.length > 0) {
-      const cloudData = docs.map(d => {
-        let mapped = { ...d, id: d._id };
-        if (type === 'quotation') {
-          // Reconstruct populated customer object compatible with local state
-          const c = d.customer || {};
-          mapped.customer = {
-            ...c,
-            id: c._id || c.id || 'C-Unknown',
-            name: c.name || 'Unknown Customer',
-            address: c.address || '-',
-            phone: c.phone || '-',
-            email: c.email || '-'
-          };
-          // Reconstruct populated items array compatible with local state
-          if (mapped.items && Array.isArray(mapped.items)) {
-            mapped.items = mapped.items.map(it => {
-              const itemObj = it.itemRef || {};
-              return {
-                ...it,
-                id: itemObj._id || itemObj.id || it.id,
-                name: itemObj.name || it.name || 'Item',
-                unit: itemObj.unit || it.unit || 'Unit',
-                price: it.price || itemObj.price || 0,
-                total: it.total || (it.qty * it.days * (it.price || itemObj.price || 0)) || 0,
-                desc: itemObj.desc || it.desc || ''
-              };
-            });
-          }
-        }
-        return mapped;
-      });
-      try { localStorage.setItem('shk_' + storeName, JSON.stringify(cloudData)); } catch(e){}
-      return cloudData;
-    }
-    return localData;
   } catch (err) {
-    console.warn('Sanity fetch offline/error, loaded from local storage:', err.message);
-    return localData;
+    console.warn('API fetch error:', err.message);
   }
+  return [];
 }
 
 async function save(storeName, data) {
-  const typeMap = { quotations: 'quotation', customers: 'customer', items: 'item', transactions: 'transaction' };
-  const type = typeMap[storeName] || storeName;
-  
-  // Ensure array items have _key property required by Sanity schema validation
-  let preparedData = { ...data };
-  if (preparedData.items && Array.isArray(preparedData.items)) {
-    preparedData.items = preparedData.items.map(it => ({
-      ...it,
-      _key: it._key || Math.random().toString(36).substring(7)
-    }));
-  }
-
-  // 1. Persist to Local State immediately so UI never blocks or freezes
+  // 1. Persist to Local State immediately
   if (!state[storeName]) state[storeName] = [];
   const existingIdx = state[storeName].findIndex(x => x.id === data.id);
   if (existingIdx >= 0) {
@@ -149,51 +62,19 @@ async function save(storeName, data) {
   } else {
     state[storeName].push(data);
   }
-  try { localStorage.setItem('shk_' + storeName, JSON.stringify(state[storeName])); } catch(e){}
 
-  // 2. Sync to Sanity Cloud gracefully in the background
-  let sanityDoc = {
-    ...preparedData,
-    _type: type,
-    _id: data.id || data._id
-  };
-  delete sanityDoc.id;
-
-  if (type === 'quotation') {
-    // Convert populated customer object to Sanity reference object
-    if (preparedData.customer) {
-      const custId = preparedData.customer.id || preparedData.customer._id || preparedData.customer._ref;
-      if (custId) {
-        sanityDoc.customer = {
-          _type: 'reference',
-          _ref: custId
-        };
-      } else {
-        delete sanityDoc.customer;
-      }
-    }
-    // Convert items array to reference format containing itemRef field
-    if (preparedData.items && Array.isArray(preparedData.items)) {
-      sanityDoc.items = preparedData.items.map(it => {
-        const itemId = it.id || it.itemRef?._ref || it.itemRef?._id;
-        return {
-          _key: it._key || Math.random().toString(36).substring(7),
-          itemRef: itemId ? { _type: 'reference', _ref: itemId } : undefined,
-          qty: Number(it.qty) || 1,
-          days: Number(it.days) || 1,
-          price: Number(it.price) || 0,
-          total: Number(it.total) || 0
-        };
-      });
-    }
-  }
-
+  // 2. Sync to DB
   try {
-    const res = await sanityClient.createOrReplace(sanityDoc);
-    return { ...res, id: res._id };
+    const res = await fetch('/api/admin/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ store: storeName, data })
+    });
+    if (!res.ok) throw new Error('API save failed');
+    return await res.json();
   } catch (err) {
-    console.warn('Sanity Cloud save fallback:', err.message);
-    toast('Tersimpan lokal (Cloud offline/tertunda)', 'primary');
+    console.warn('API save error:', err.message);
+    toast('Tersimpan lokal (Offline)', 'primary');
     return data;
   }
 }
@@ -202,14 +83,13 @@ async function remove(storeName, id) {
   // Update local state immediately
   if (state[storeName]) {
     state[storeName] = state[storeName].filter(x => x.id !== id);
-    try { localStorage.setItem('shk_' + storeName, JSON.stringify(state[storeName])); } catch(e){}
   }
 
   try {
-    await sanityClient.delete(id);
+    const res = await fetch(`/api/admin/db?store=${storeName}&id=${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('API delete failed');
   } catch (err) {
-    console.warn('Sanity Cloud delete fallback:', err.message);
-    toast('Dihapus lokal (Cloud offline)', 'amber');
+    console.warn('API delete error:', err.message);
   }
 }
 
@@ -219,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
     initCharts();
     updateDate();
+    initNotifications();
   });
   
   // Close AC on click outside
@@ -231,6 +112,61 @@ function updateDate() {
   const now = new Date();
   const options = { day: 'numeric', month: 'short', year: 'numeric' };
   document.getElementById('topbar-date').textContent = now.toLocaleDateString('id-ID', options);
+}
+
+// --- NOTIFICATIONS ---
+let lastOrderCount = 0;
+async function initNotifications() {
+  if (window.LocalNotifications) {
+    try {
+      await window.LocalNotifications.requestPermissions();
+    } catch (e) {
+      console.warn("Notifications permission error:", e);
+    }
+  }
+  
+  // Set baseline order count
+  lastOrderCount = state.quotations.length;
+  
+  // Poll every 15 seconds
+  setInterval(pollOrders, 15000);
+}
+
+async function pollOrders() {
+  try {
+    const freshOrders = await getAll('quotations');
+    if (freshOrders.length > lastOrderCount) {
+      const diff = freshOrders.length - lastOrderCount;
+      const latestOrder = freshOrders[freshOrders.length - 1]; // Assume appended or sort needed
+      
+      // Notify
+      if (window.LocalNotifications) {
+        window.LocalNotifications.schedule({
+          notifications: [
+            {
+              title: "Pesanan Baru!",
+              body: `Ada ${diff} pesanan baru dari website. Cek dashboard sekarang.`,
+              id: new Date().getTime(),
+              schedule: { at: new Date(Date.now() + 1000) }
+            }
+          ]
+        });
+      } else {
+        // Fallback for Web browser
+        if (Notification.permission === 'granted') {
+          new Notification("Pesanan Baru!", { body: `Ada pesanan baru dari website!` });
+        }
+      }
+      
+      // Update state and UI
+      state.quotations = freshOrders;
+      lastOrderCount = freshOrders.length;
+      updateUI();
+      updateCharts();
+    }
+  } catch (err) {
+    // Silent fail
+  }
 }
 
 // --- UI UPDATES ---

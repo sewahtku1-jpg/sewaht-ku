@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.sewahtku.admin',
-  appName: 'SewaHTku Admin',
+  appName: 'SEWAHTKU',
   webDir: 'public/admin'
 };
 

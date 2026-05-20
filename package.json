@@ -12,16 +12,21 @@
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",
-    "@sanity/client": "^7.22.0",
+    "@capacitor/local-notifications": "^8.2.0",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.475.0",
     "next": "16.2.4",
+    "pg": "^8.21.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "sonner": "^2.0.7"
   },
   "devDependencies": {
+    "esbuild": "^0.28.0",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4"
+    "eslint-config-next": "16.2.4",
+    "prisma": "^7.8.0"
   }
 }

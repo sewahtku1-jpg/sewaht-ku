@@ -34,42 +34,121 @@ const productsData = [
 
 import { toast } from 'sonner';
 
+const ProductCard = ({ p, idx, onOpenSpecs }) => {
+  const images = (p.img || '/assets/baofeng.png').split(',').map(s => s.trim());
+  const [currentImgIdx, setCurrentImgIdx] = useState(0);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.6, delay: idx * 0.12, ease: [0.23, 1, 0.32, 1] }}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        background: 'white', borderRadius: '16px', padding: '2.5rem 2rem 2rem',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+        position: 'relative'
+      }}
+    >
+      <div style={{ position: 'relative', width: '100%', height: '280px', marginBottom: '2.5rem' }}>
+        <motion.img 
+          key={images[currentImgIdx]}
+          initial={{ opacity: 0.5 }}
+          animate={{ opacity: 1 }}
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.3 }}
+          src={images[currentImgIdx]} 
+          alt={p.name} 
+          style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }}
+        />
+        {images.length > 1 && (
+          <div style={{ position: 'absolute', bottom: '-20px', left: '0', right: '0', display: 'flex', justifyContent: 'center', gap: '6px' }}>
+            {images.map((_, i) => (
+              <div 
+                key={i} 
+                onClick={(e) => { e.stopPropagation(); setCurrentImgIdx(i); }}
+                style={{ 
+                  width: i === currentImgIdx ? '24px' : '8px', 
+                  height: '8px', 
+                  background: i === currentImgIdx ? '#0250a3' : 'rgba(0,0,0,0.15)', 
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: '0.3s'
+                }} 
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--slate-900)', textAlign: 'center', marginBottom: '1.5rem', marginTop: 'auto' }}>
+        {p.name}
+      </h3>
+
+      <button 
+        onClick={() => onOpenSpecs(p)}
+        style={{
+          background: '#0250a3',
+          color: 'white',
+          border: 'none',
+          padding: '12px 32px',
+          fontSize: '1rem',
+          fontWeight: 600,
+          borderRadius: '6px',
+          cursor: 'pointer',
+          width: '100%',
+          transition: 'all 0.3s ease',
+          boxShadow: '0 4px 12px rgba(2, 80, 163, 0.2)'
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.background = '#013e82';
+          e.currentTarget.style.transform = 'translateY(-2px)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.background = '#0250a3';
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
+      >
+        Spesifikasi
+      </button>
+    </motion.div>
+  );
+};
+
 export default function LandingPage() {
   const [view, setView] = useState('home');
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState(productsData);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // --- SYNC WITH SANITY CLOUD ---
+  // --- SYNC WITH NEON DB ---
   useEffect(() => {
-    const fetchFromSanity = async () => {
+    const fetchFromNeonDB = async () => {
       try {
-        const PROJECT_ID = 'lzgftrin';
-        const DATASET = 'production';
-        const QUERY = encodeURIComponent('*[_type == "item"]');
-        const url = `https://${PROJECT_ID}.api.sanity.io/v2023-05-03/data/query/${DATASET}?query=${QUERY}`;
-        
+        const url = `/api/admin/db?store=items`;
         const res = await fetch(url);
-        const json = await res.json();
+        const data = await res.json();
         
-        if (json.result && json.result.length > 0) {
-          const mappedItems = json.result.map((item, index) => ({
-            id: item._id,
+        if (data && data.length > 0) {
+          const mappedItems = data.map((item) => ({
+            id: item.id,
             name: item.name,
             price: item.price,
-            img: item.img || "/assets/baofeng.png",
+            img: item.img || "/assets/baofeng.png", // This might be comma separated
             desc: item.desc || "Perangkat HT profesional dengan kualitas suara jernih.",
             specs: item.specs || ["Dual-band", "Range up to 5km", "Long battery"]
           }));
-          setProducts(mappedItems.slice(0, 2));
+          setProducts(mappedItems);
         }
       } catch (err) {
-        console.error("Failed to fetch products from Sanity Cloud", err);
+        console.error("Failed to fetch products from Neon DB", err);
       }
     };
     
-    fetchFromSanity();
+    fetchFromNeonDB();
   }, []);
 
   const [marqueeLogos, setMarqueeLogos] = useState([]);
@@ -352,58 +431,8 @@ export default function LandingPage() {
                   <p className="section-desc">Perangkat berkualitas tinggi untuk jangkauan sinyal tanpa batas.</p>
                 </div>
                 <div className="product-grid">
-                  {products.slice(0, 2).map((p, idx) => (
-                    <motion.div 
-                      key={p.id}
-                      initial={{ opacity: 0, y: 40 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: '-60px' }}
-                      transition={{ duration: 0.6, delay: idx * 0.12, ease: [0.23, 1, 0.32, 1] }}
-                      className="product-card premium-card"
-                    >
-                      {/* Image area */}
-                      <div className="product-img-wrapper">
-                        <motion.img 
-                          whileHover={{ scale: 1.08, rotate: 2 }}
-                          transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                          src={p.img} 
-                          alt={p.name} 
-                          className="product-img"
-                        />
-                      </div>
-
-                      {/* Info */}
-                      <div className="product-info">
-                        <h3 className="product-name">{p.name}</h3>
-                        <p className="product-desc">{p.desc}</p>
-                      </div>
-
-                      {/* Specs */}
-                      <ul className="product-specs">
-                        {p.specs.map((s, i) => (
-                          <li key={i} className="product-spec-item">
-                            <CheckCircle2 size={15} color="var(--teal-primary)" />
-                            {s}
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Footer */}
-                      <div className="product-footer">
-                        <div className="product-price">
-                          <span className="price-from">Mulai Dari</span>
-                          <p className="price-tag">Rp {p.price.toLocaleString()}<span className="price-unit">/hari</span></p>
-                        </div>
-                        <motion.button 
-                          whileTap={{ scale: 0.88 }}
-                          className="add-to-cart-btn"
-                          onClick={() => addToCart(p)}
-                          aria-label={`Tambah ${p.name} ke keranjang`}
-                        >
-                          <Plus size={22} />
-                        </motion.button>
-                      </div>
-                    </motion.div>
+                  {products.map((p, idx) => (
+                    <ProductCard key={p.id} p={p} idx={idx} onOpenSpecs={setSelectedProduct} />
                   ))}
                 </div>
               </div>
@@ -494,7 +523,7 @@ export default function LandingPage() {
                         <div key={item.id} className="cart-item-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem', background: 'var(--bg-secondary)', borderRadius: '20px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                             <div style={{ width: '80px', height: '80px', background: 'white', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E2E8F0' }}>
-                              <img src={item.img} alt={item.name} style={{ maxHeight: '50px' }} />
+                              <img src={item.img.split(',')[0].trim()} alt={item.name} style={{ maxHeight: '50px' }} />
                             </div>
                             <div>
                               <h4 style={{ fontSize: '1.2rem', fontWeight: 800 }}>{item.name}</h4>
@@ -556,6 +585,108 @@ export default function LandingPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Product Specs Modal */}
+      <AnimatePresence>
+        {selectedProduct && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999, padding: '1rem'
+          }}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{
+                background: 'white',
+                borderRadius: '24px',
+                width: '100%',
+                maxWidth: '600px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <button 
+                onClick={() => setSelectedProduct(null)}
+                style={{
+                  position: 'absolute', top: '20px', right: '20px',
+                  background: 'var(--bg-secondary)', border: 'none',
+                  width: '40px', height: '40px', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', zIndex: 10, color: 'var(--slate-600)'
+                }}
+              >
+                <X size={20} />
+              </button>
+
+              <div style={{ padding: '2rem 2rem 1.5rem', borderBottom: '1px solid #f1f5f9', background: 'var(--bg-secondary)', borderRadius: '24px 24px 0 0' }}>
+                <h3 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--slate-900)', paddingRight: '40px', lineHeight: 1.2 }}>
+                  {selectedProduct.name}
+                </h3>
+              </div>
+
+              <div style={{ padding: '2rem', flex: 1 }}>
+                <p style={{ color: 'var(--slate-600)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                  {selectedProduct.desc}
+                </p>
+
+                <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--slate-900)', marginBottom: '1rem' }}>
+                  Spesifikasi Teknis
+                </h4>
+                
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                  {selectedProduct.specs.map((s, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                      <CheckCircle2 size={18} color="var(--teal-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span style={{ color: 'var(--slate-700)', lineHeight: 1.4 }}>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div style={{ 
+                padding: '1.5rem 2rem', 
+                borderTop: '1px solid #f1f5f9', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                background: 'white',
+                borderRadius: '0 0 24px 24px'
+              }}>
+                <div>
+                  <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--slate-500)', fontWeight: 600, marginBottom: '0.25rem' }}>Harga Sewa</span>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--indigo-primary)' }}>Rp {selectedProduct.price.toLocaleString()}</span>
+                    <span style={{ color: 'var(--slate-500)', fontSize: '0.9rem' }}>/hari</span>
+                  </div>
+                </div>
+                
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    addToCart(selectedProduct);
+                    setSelectedProduct(null);
+                  }}
+                  className="btn-vibrant btn-primary"
+                  style={{ padding: '0.8rem 1.5rem' }}
+                >
+                  <Plus size={20} />
+                  <span>Sewa Alat Ini</span>
+                </motion.button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
