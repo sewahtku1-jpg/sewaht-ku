@@ -53,36 +53,61 @@ export async function POST(request) {
       });
     } else if (store === 'quotations') {
       const { items, customer, ...orderData } = data;
-      if (customer && customer.id) {
-        orderData.customerId = customer.id;
-      }
       
-      // Upsert the main order
+      // ✅ PENTING: Simpan customer ke DB terlebih dahulu agar FK tidak violated
+      if (customer && customer.id) {
+        const { id: custId, name, address, phone, email } = customer;
+        await prisma.customer.upsert({
+          where: { id: custId },
+          update: { name: name || '', address: address || '', phone: phone || '', email: email || '' },
+          create: { id: custId, name: name || '', address: address || '', phone: phone || '', email: email || '' }
+        });
+        orderData.customerId = custId;
+      }
+
+      // Bersihkan field yang bukan kolom Order — sesuai Prisma schema
+      const cleanOrder = {
+        id: orderData.id || orderId,
+        invoiceNo: orderData.invoiceNo || orderData.id,
+        date: orderData.date || new Date().toISOString(),
+        status: orderData.status || 'Draf',
+        paymentStatus: orderData.paymentStatus || 'Belum Lunas',
+        grandTotal: Number(orderData.grandTotal) || 0,
+        event: orderData.eventName || orderData.event || null,
+        location: orderData.location || null,
+        loadingDate: orderData.loadDate || orderData.loadingDate || null,
+        discount: Number(orderData.discount) || 0,
+        pph: Number(orderData.pph) || 0,
+        note: orderData.notes || orderData.note || null,
+        ...(orderData.customerId ? { customerId: orderData.customerId } : {})
+      };
+
+      // Upsert order
       result = await prisma.order.upsert({
-        where: { id: orderData.id },
-        update: orderData,
-        create: orderData
+        where: { id: cleanOrder.id },
+        update: cleanOrder,
+        create: cleanOrder
       });
       
       // Handle items
-      await prisma.orderItem.deleteMany({ where: { orderId: orderData.id } });
+      await prisma.orderItem.deleteMany({ where: { orderId: cleanOrder.id } });
       if (items && items.length > 0) {
         await prisma.orderItem.createMany({
           data: items.map(it => ({
-            orderId: orderData.id,
-            itemId: it.id,
-            qty: it.qty,
-            days: it.days,
-            price: it.price,
-            total: it.total
+            orderId: cleanOrder.id,
+            itemId: it.id || it.itemId,
+            qty: Number(it.qty) || 1,
+            days: Number(it.days) || 1,
+            price: Number(it.price) || 0,
+            total: Number(it.total) || 0
           }))
         });
       }
-      result = await prisma.order.findUnique({ where: { id: orderData.id }, include: { customer: true, items: true } });
+      result = await prisma.order.findUnique({ where: { id: cleanOrder.id }, include: { customer: true, items: true } });
     }
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Prisma Error:', error);
+    console.error('Prisma Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
