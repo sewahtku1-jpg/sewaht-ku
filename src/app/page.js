@@ -28,8 +28,8 @@ import {
 
 
 const productsData = [
-  { id: 1, name: "Baofeng UV-5R", price: 35000, img: "/assets/baofeng.png", desc: "Dual-band hand-held transceiver with display function menu on the display 'LCD'.", specs: ["136-174 / 400-520MHz", "Up to 5km range", "Long battery life"] },
-  { id: 2, name: "Motorola GP328", price: 75000, img: "/assets/motorola.png", desc: "The practical radio solution for professionals who need to stay in touch.", specs: ["UHF/VHF", "Rugged design", "Clear audio quality"] }
+  { id: 1, name: "Baofeng BF-888S", price: 10000, img: "/assets/bf888s_1.png", desc: "Dual-band hand-held transceiver with display function menu on the display 'LCD'.", specs: ["136-174 / 400-520MHz", "Up to 5km range", "Long battery life"] },
+  { id: 2, name: "Baofeng UV-82", price: 20000, img: "/assets/uv82_1.png", desc: "The practical radio solution for professionals who need to stay in touch.", specs: ["UHF/VHF", "Rugged design", "Clear audio quality"] }
 ];
 
 import { toast } from 'sonner';
