@@ -43,12 +43,18 @@ const ProductCard = ({ p, idx, onOpenSpecs }) => {
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.6, delay: idx * 0.12, ease: [0.23, 1, 0.32, 1] }}
+      whileHover={{ 
+        background: 'white', 
+        boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
+        y: -4
+      }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        background: 'white', borderRadius: '16px', padding: '2.5rem 2rem 2rem',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
-        position: 'relative'
+        background: 'transparent', borderRadius: '16px', padding: '2.5rem 2rem 2rem',
+        boxShadow: 'none',
+        position: 'relative',
+        cursor: 'pointer'
       }}
     >
       <div style={{ position: 'relative', width: '100%', height: '280px', marginBottom: '2.5rem' }}>
@@ -92,14 +98,14 @@ const ProductCard = ({ p, idx, onOpenSpecs }) => {
           background: '#0250a3',
           color: 'white',
           border: 'none',
-          padding: '12px 32px',
+          padding: '12px 36px',
           fontSize: '1rem',
           fontWeight: 600,
-          borderRadius: '6px',
+          borderRadius: '4px',
           cursor: 'pointer',
-          width: '100%',
+          width: 'auto',
           transition: 'all 0.3s ease',
-          boxShadow: '0 4px 12px rgba(2, 80, 163, 0.2)'
+          boxShadow: 'none'
         }}
         onMouseOver={(e) => {
           e.currentTarget.style.background = '#013e82';
