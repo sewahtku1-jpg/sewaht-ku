@@ -545,7 +545,7 @@ function printInvoice(id) {
   };
 
   localStorage.setItem('print_quote', JSON.stringify(printData));
-  window.open('./invoice.html', '_blank');
+  window.open('/admin/invoice.html', '_blank');
 }
 
 // --- FINANCE LOGIC ---

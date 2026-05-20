@@ -720,7 +720,7 @@
     <header class="inv-header">
       <div class="logo-section">
         <div class="logo-box">
-          <img src="./sewahtku_logo.png" alt="Sewa HT Ku Logo">
+          <img src="/admin/sewahtku_logo.png" alt="Sewa HT Ku Logo">
         </div>
         <div>
           <h1 class="brand-title">SEWA HT KU</h1>
@@ -824,6 +824,14 @@ Belum dilengkapi</div>
       </div>
     </section>
 
+    <!-- Deposit Section -->
+    <div class="inv-deposit">
+      <div class="dep-info">
+        <div class="d-lbl">Jaminan Penyewaan (Deposit)</div>
+        <div class="d-note">Jaminan KTP / Kartu Identitas Asli yang masih berlaku</div>
+      </div>
+      <span class="dep-tag" id="pDepStatus">Wajib Diserahkan</span>
+    </div>
 
     <!-- Bank Details Section -->
     <section class="inv-payment-card">
@@ -970,6 +978,9 @@ Belum dilengkapi</div>
           if (wmBlock) wmBlock.classList.add('visible');
         } else {
           depBlock.textContent = 'Wajib Diserahkan';
+          depBlock.style.color = '';
+          depBlock.style.backgroundColor = '';
+          depBlock.style.borderColor = '';
           if (wmBlock) wmBlock.classList.remove('visible');
         }
 
