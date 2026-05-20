@@ -7,13 +7,14 @@ const getLogosDir = () => path.join(process.cwd(), 'public', 'uploads', 'logos')
 export async function GET() {
   try {
     const dir = getLogosDir();
+    let files = [];
     try {
-      await fs.access(dir);
-    } catch {
-      await fs.mkdir(dir, { recursive: true });
+      files = await fs.readdir(dir);
+    } catch (e) {
+      // Ignore errors (like directory not existing or read-only filesystem on Vercel)
+      files = [];
     }
 
-    const files = await fs.readdir(dir);
     const images = files.filter(f => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f));
     
     // Provide nice default mock sponsors if empty so the marquee looks gorgeous immediately
