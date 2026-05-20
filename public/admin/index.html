@@ -13,18 +13,39 @@
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#2563eb" />
   <link rel="apple-touch-icon" href="./sewahtku_logo.png" />
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./style.css?v=5" />
   <script>
+    // ✅ AUTO-UPDATE: Reload page automatically when a new version is deployed
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/admin/service-worker.js')
-          .then(reg => console.log('SW Registered'))
+          .then(reg => {
+            console.log('SW Registered');
+            // Check for updates every 30 seconds
+            setInterval(() => reg.update(), 30000);
+            // When a new SW is waiting, activate it immediately
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New version available — auto reload
+                  console.log('New version available! Reloading...');
+                  window.location.reload();
+                }
+              });
+            });
+          })
           .catch(err => console.log('SW Failed', err));
+
+        // Also reload when SW controller changes (after skipWaiting)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
       });
     }
   </script>
 </head>
-<body>
+<body style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0b1f3a 70%, #0f172a 100%); min-height: 100vh;">
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
