@@ -1,16 +1,20 @@
-const CACHE_NAME = 'sewahtku-v6';
+const CACHE_NAME = 'sewahtku-v7';
 const LOCAL_ASSETS = [
   './index.html',
   './style.css',
   './app.js',
   './manifest.json',
-  './sewahtku_logo.png'
+  './sewahtku_logo.png',
+  // Local font files (no CDN dependency)
+  './fonts/tabler-icons.min.css',
+  './fonts/tabler-icons.woff2',
+  './fonts/tabler-icons.woff',
+  './fonts/tabler-icons.ttf',
 ];
 
-// Cache external CDN assets separately so icons/fonts work offline
+// CDN assets cached best-effort (chart.js, google fonts)
 const CDN_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap',
-  'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css',
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
@@ -20,7 +24,7 @@ self.addEventListener('install', (e) => {
     caches.open(CACHE_NAME).then((cache) => {
       // Cache local assets first (required)
       return cache.addAll(LOCAL_ASSETS).then(() => {
-        // Cache CDN assets individually (best effort, don't fail install if CDN unavailable)
+        // Cache CDN assets best-effort (don't fail install if CDN unavailable)
         return Promise.allSettled(CDN_ASSETS.map(url => cache.add(url)));
       });
     })
@@ -38,7 +42,7 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // For navigation requests (HTML), always try network first
+  // For navigation requests (HTML), always try network first for auto-update
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request)
@@ -52,7 +56,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // For CSS/JS/fonts: Cache First (fast load), fallback to network
+  // For all other assets: Cache First, then network
   e.respondWith(
     caches.match(e.request).then((cached) => {
       if (cached) return cached;

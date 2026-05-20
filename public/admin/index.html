@@ -7,7 +7,7 @@
   <meta name="description" content="Sistem manajemen kuotasi dan keuangan profesional." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link rel="stylesheet" href="./fonts/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/@sanity/client@6.15.1/dist/index.browser.js"></script>
   <link rel="manifest" href="./manifest.json" />
@@ -15,15 +15,10 @@
   <link rel="apple-touch-icon" href="./sewahtku_logo.png" />
   <link rel="stylesheet" href="./style.css?v=7" />
   <style>
-    /* Critical layout CSS — ensures sidebar & main always render correctly */
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8fafc;color:#0f172a;overflow-x:hidden;}
-    .sidebar{position:fixed;left:0;top:0;bottom:0;width:270px;background:linear-gradient(180deg,#0b1329 0%,#0f172a 100%);color:white;z-index:1000;display:flex;flex-direction:column;transition:transform .35s;}
+    /* Critical layout — failsafe jika style.css terlambat */
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:270px;background:linear-gradient(180deg,#0b1329 0%,#0f172a 100%);color:white;z-index:1000;display:flex;flex-direction:column;}
     .main-wrapper{margin-left:270px;min-height:100vh;}
-    .topbar{height:76px;background:rgba(248,250,252,.85);position:sticky;top:0;z-index:900;display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-bottom:1px solid rgba(226,232,240,.8);}
-    .page{display:none;padding:36px;}
-    .page.active{display:block;}
-    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.active{transform:translateX(0)}.main-wrapper{margin-left:0;padding-bottom:90px;}.topbar{padding:0 20px;height:68px;}}
+    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.active{transform:translateX(0)}.main-wrapper{margin-left:0;padding-bottom:90px;}}
   </style>
   <script>
     // ✅ AUTO-UPDATE: Reload page automatically when a new version is deployed
