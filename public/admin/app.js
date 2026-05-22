@@ -33,8 +33,8 @@ async function seedData() {
     { id: 'I-001', name: 'Handy Talkie Baofeng BF-888S', unit: 'Unit', price: 10000, desc: 'HT handal untuk event outdoor dan indoor.', img: '/assets/bf888s_new_1.png', specs: ['Jarak 1-3km', '16 Channel', 'Baterai 1500mAh'] },
     { id: 'I-002', name: 'Handy Talkie Baofeng UV-82', unit: 'Unit', price: 20000, desc: 'HT Dual Band dengan layar LCD dan keypad.', img: '/assets/uv82_new_1.png', specs: ['Dual Band VHF/UHF', 'Jarak 3-5km', 'Baterai Awet'] }
   ];
-  for (let c of sampleCust) await save('customers', c);
-  for (let i of sampleItems) await save('items', i);
+  for (let c of sampleCust) await save('customers', c, true);
+  for (let i of sampleItems) await save('items', i, true);
   state.customers = sampleCust;
   state.items = sampleItems;
 }
@@ -53,7 +53,7 @@ async function getAll(storeName) {
   return [];
 }
 
-async function save(storeName, data) {
+async function save(storeName, data, silent = false) {
   // 1. Persist to Local State immediately
   if (!state[storeName]) state[storeName] = [];
   const existingIdx = state[storeName].findIndex(x => x.id === data.id);
@@ -74,7 +74,7 @@ async function save(storeName, data) {
     return await res.json();
   } catch (err) {
     console.warn('API save error:', err.message);
-    toast('Tersimpan lokal (Offline)', 'primary');
+    if (!silent) toast('Tersimpan lokal (Offline)', 'primary');
     return data;
   }
 }

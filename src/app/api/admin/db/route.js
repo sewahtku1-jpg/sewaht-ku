@@ -67,7 +67,7 @@ export async function POST(request) {
 
       // Bersihkan field yang bukan kolom Order — sesuai Prisma schema
       const cleanOrder = {
-        id: orderData.id || orderId,
+        id: orderData.id,
         invoiceNo: orderData.invoiceNo || orderData.id,
         date: orderData.date || new Date().toISOString(),
         status: orderData.status || 'Draf',

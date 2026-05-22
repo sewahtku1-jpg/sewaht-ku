@@ -42,6 +42,12 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  // Do not cache API requests
+  if (e.request.url.includes('/api/')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
   // For navigation requests (HTML), always try network first for auto-update
   if (e.request.mode === 'navigate') {
     e.respondWith(
@@ -61,7 +67,8 @@ self.addEventListener('fetch', (e) => {
     caches.match(e.request).then((cached) => {
       if (cached) return cached;
       return fetch(e.request).then((res) => {
-        if (res && res.status === 200) {
+        // Only cache GET requests
+        if (e.request.method === 'GET' && res && res.status === 200) {
           const resClone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
         }
