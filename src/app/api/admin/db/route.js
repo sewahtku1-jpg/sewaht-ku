@@ -91,9 +91,10 @@ export async function POST(request) {
       
       // Handle items
       await prisma.orderItem.deleteMany({ where: { orderId: cleanOrder.id } });
-      if (items && items.length > 0) {
+      const validItems = (items || []).filter(it => it.id || it.itemId);
+      if (validItems.length > 0) {
         await prisma.orderItem.createMany({
-          data: items.map(it => ({
+          data: validItems.map(it => ({
             orderId: cleanOrder.id,
             itemId: it.id || it.itemId,
             qty: Number(it.qty) || 1,
