@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 const getLogosDir = () => path.join(process.cwd(), 'public', 'uploads', 'logos');
 
 export async function GET() {
