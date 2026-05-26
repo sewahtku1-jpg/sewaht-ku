@@ -3,24 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script>
-    // FIX APK & WEB ROUTING: Pastikan URL web berakhiran slash agar relative path berfungsi, tapi abaikan jika di dalam APK (file:// atau localhost)
-    if (window.location.protocol.startsWith('http') && !window.location.pathname.endsWith('/')) {
-      window.location.replace(window.location.pathname + '/' + window.location.search + window.location.hash);
-    }
-  </script>
   <title>SewaHTku — Dashboard Admin</title>
   <meta name="description" content="Sistem manajemen kuotasi dan keuangan profesional." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./fonts/tabler-icons.min.css" />
+  <link rel="stylesheet" href="/admin/fonts/tabler-icons.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/@sanity/client@6.15.1/dist/index.browser.js"></script>
-  <link rel="manifest" href="./manifest.json" />
+  <link rel="manifest" href="/admin/manifest.json" />
   <meta name="theme-color" content="#2563eb" />
-  <link rel="apple-touch-icon" href="./sewahtku_logo.png" />
-  <link rel="icon" href="./sewahtku_logo.png" type="image/png" />
-  <link rel="stylesheet" href="./style.css?v=9" />
+  <link rel="apple-touch-icon" href="/admin/sewahtku_logo.png" />
+  <link rel="icon" href="/admin/sewahtku_logo.png" type="image/png" />
+  <link rel="stylesheet" href="/admin/style.css?v=10" />
   <style>
     /* Critical layout — failsafe jika style.css terlambat */
     .sidebar{position:fixed;left:0;top:0;bottom:0;width:270px;background:linear-gradient(180deg,#0b1329 0%,#0f172a 100%);color:white;z-index:1000;display:flex;flex-direction:column;}
@@ -31,7 +25,7 @@
     // ✅ AUTO-UPDATE: Reload page automatically when a new version is deployed
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
+        navigator.serviceWorker.register('/admin/service-worker.js')
           .then(reg => {
             console.log('SW Registered');
             // Check for updates every 30 seconds
@@ -64,7 +58,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">
-      <img src="./sewahtku_logo.png" alt="SewaHTku Logo" style="width: 48px; height: 48px; object-fit: contain;" />
+      <img src="/admin/sewahtku_logo.png" alt="SewaHTku Logo" style="width: 48px; height: 48px; object-fit: contain;" />
       <div class="logo-text">
         <span class="logo-title">SewaHTku</span>
         <span class="logo-sub">Admin Panel</span>
@@ -608,7 +602,7 @@
 <!-- TOAST -->
 <div id="toast-box"></div>
 
-<script src="./cap-plugins.js"></script>
-<script src="./app.js?v=5"></script>
+<script src="/admin/cap-plugins.js"></script>
+<script src="/admin/app.js?v=6"></script>
 </body>
 </html>
