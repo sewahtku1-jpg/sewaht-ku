@@ -320,7 +320,8 @@ function addQuoteRow(data = null) {
   const tbody = document.getElementById('q-items-tbody');
   const tr = document.createElement('tr');
   let opts = '<option value="">-- Pilih --</option>';
-  state.items.forEach(i => opts += `<option value="${i.id}" ${data && data.id === i.id ? 'selected' : ''}>${i.name}</option>`);
+  const targetItemId = data ? (data.itemId || data.id) : null;
+  state.items.forEach(i => opts += `<option value="${i.id}" ${targetItemId === i.id ? 'selected' : ''}>${i.name}</option>`);
   
   tr.innerHTML = `
     <td><select class="row-id" onchange="onItemChange(this)">${opts}</select></td>
@@ -398,6 +399,7 @@ async function saveQuotation(e) {
     pph: parseInt(document.getElementById('q-pph').value),
     grandTotal: parseInt(document.getElementById('s-grand').dataset.val),
     items: Array.from(document.querySelectorAll('#q-items-tbody tr')).map(tr => ({
+      itemId: tr.querySelector('.row-id').value,
       id: tr.querySelector('.row-id').value,
       qty: parseInt(tr.querySelector('.row-qty').value),
       days: parseInt(tr.querySelector('.row-days').value),
@@ -465,12 +467,13 @@ function printInvoice(id) {
   
   // Enrich items with real names, units, and descriptions from master catalog
   const enrichedItems = (q.items || []).map(it => {
-    const masterItem = state.items.find(mi => mi.id === it.id);
+    const targetItemId = it.itemId || it.id;
+    const masterItem = state.items.find(mi => mi.id === targetItemId);
     return {
       ...it,
-      name: masterItem ? masterItem.name : (it.name || it.id),
-      unit: masterItem ? masterItem.unit : (it.unit || 'Unit'),
-      desc: masterItem ? masterItem.desc : (it.desc || '')
+      name: masterItem ? masterItem.name : (it.item ? it.item.name : targetItemId),
+      unit: masterItem ? masterItem.unit : 'Unit',
+      desc: masterItem ? masterItem.desc : ''
     };
   });
 
