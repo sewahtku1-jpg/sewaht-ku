@@ -367,11 +367,11 @@ function calcQuote() {
 async function saveQuotation(e) {
   e.preventDefault();
   const d = new Date();
-  const yyyy = d.getFullYear();
+  const yy = String(d.getFullYear()).slice(-2);
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
-  const r = Math.floor(1000 + Math.random() * 9000);
-  const fallbackId = `SHK/${yyyy}${mm}${dd}-${r}`;
+  const r = Math.floor(100 + Math.random() * 900);
+  const fallbackId = `SHK/${yy}${mm}${dd}-${r}`;
   const id = document.getElementById('q-edit-id').value || fallbackId;
   const custName = document.getElementById('q-cust-name').value;
   let cust = state.customers.find(c => c.name === custName);
@@ -646,15 +646,13 @@ function resetQuoteForm() {
   document.getElementById('form-quotation').reset();
   document.getElementById('q-edit-id').value = '';
   const d = new Date();
-  const yyyy = d.getFullYear();
+  const yy = String(d.getFullYear()).slice(-2);
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
-  const r = Math.floor(1000 + Math.random() * 9000);
-  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-  const dayName = days[d.getDay()];
+  const r = Math.floor(100 + Math.random() * 900);
   
-  document.getElementById('q-order-no').value = `SHK/${yyyy}${mm}${dd}-${r}`;
-  document.getElementById('q-invoice-no').value = `SHK/${dayName}, ${dd}-${mm}-${yyyy}/${r}`;
+  document.getElementById('q-order-no').value = `ORD-${yy}${mm}${dd}-${r}`;
+  document.getElementById('q-invoice-no').value = `SHK/${yy}${mm}${dd}-${r}`;
   document.getElementById('q-date').valueAsDate = new Date();
   document.getElementById('q-items-tbody').innerHTML = '';
   addQuoteRow();

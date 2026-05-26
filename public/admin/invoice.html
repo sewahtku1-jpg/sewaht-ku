@@ -979,6 +979,16 @@ Belum dilengkapi</div>
 
         const depBlock = document.getElementById('pDepStatus');
         const wmBlock = document.getElementById('pWatermark');
+        
+        // Reset defaults
+        if (depBlock) {
+          depBlock.textContent = 'Wajib Diserahkan';
+          depBlock.style.color = '';
+          depBlock.style.backgroundColor = '';
+          depBlock.style.borderColor = '';
+        }
+        if (wmBlock) wmBlock.classList.remove('visible');
+
         if (data.paymentStatus === 'Lunas') {
           if (depBlock) {
             depBlock.textContent = 'Identitas Diamankan';
@@ -991,13 +1001,7 @@ Belum dilengkapi</div>
             wmBlock.classList.remove('unpaid');
             wmBlock.classList.add('visible');
           }
-        } else {
-          if (depBlock) {
-            depBlock.textContent = 'Wajib Diserahkan';
-            depBlock.style.color = '';
-            depBlock.style.backgroundColor = '';
-            depBlock.style.borderColor = '';
-          }
+        } else if (data.paymentStatus === 'DP' || data.paymentStatus === 'Belum Lunas') {
           if (wmBlock) {
             wmBlock.textContent = 'BELUM LUNAS';
             wmBlock.classList.add('unpaid');
