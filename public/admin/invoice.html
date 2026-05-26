@@ -1097,7 +1097,7 @@ Belum dilengkapi</div>
       }
     });
 
-    function downloadPDF() {
+    async function downloadPDF() {
       const element = document.getElementById('invContainer');
       const invoiceNo = document.getElementById('pMetaInvoice').textContent || 'Invoice';
       const safeName = invoiceNo.replace(/[\/\\]/g, '-');
@@ -1110,11 +1110,46 @@ Belum dilengkapi</div>
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
-      // Ensure html2pdf is loaded
-      if (typeof html2pdf !== 'undefined') {
-        html2pdf().set(opt).from(element).save();
-      } else {
-        alert("Library PDF sedang dimuat, coba beberapa detik lagi.");
+      if (typeof html2pdf === 'undefined') {
+        return alert("Library PDF sedang dimuat, coba beberapa detik lagi.");
+      }
+
+      try {
+        const btn = document.querySelector('.btn-action[onclick="downloadPDF()"]');
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-loader"></i> Memproses...';
+        
+        // Generate PDF
+        const worker = html2pdf().set(opt).from(element);
+        
+        // Coba untuk WebView/HP: Output sebagai Blob lalu Share
+        const pdfBlob = await worker.output('blob');
+        const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+        
+        // Deteksi jika browser/HP mendukung Share (seperti APK Android / Chrome Mobile)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: opt.filename,
+              text: 'Berikut adalah Invoice Anda'
+            });
+            btn.innerHTML = oldText;
+            return;
+          } catch (shareErr) {
+            console.warn('Share dibatalkan atau gagal:', shareErr);
+            // Lanjut ke fallback .save() di bawah
+          }
+        }
+
+        // Coba save langsung jika Share tidak didukung atau gagal
+        await worker.save();
+        btn.innerHTML = oldText;
+      } catch (e) {
+        alert("Gagal memproses PDF: " + e.message);
+        console.error(e);
+        const btn = document.querySelector('.btn-action[onclick="downloadPDF()"]');
+        if (btn) btn.innerHTML = '<i class="ti ti-download"></i> Download PDF';
       }
     }
   </script>
