@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sewahtku-v7';
+const CACHE_NAME = 'sewahtku-v8';
 const LOCAL_ASSETS = [
   './index.html',
   './style.css',
@@ -48,32 +48,29 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // For navigation requests (HTML), always try network first for auto-update
-  if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request)
-        .then((res) => {
-          const resClone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
-          return res;
-        })
-        .catch(() => caches.match('./index.html'))
-    );
-    return;
-  }
-
-  // For all other assets: Cache First, then network
+  // Always try Network First for everything to ensure auto-updates
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(e.request).then((res) => {
-        // Only cache GET requests
+    fetch(e.request)
+      .then((res) => {
+        // Cache successful GET requests for offline use
         if (e.request.method === 'GET' && res && res.status === 200) {
           const resClone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
         }
         return res;
-      }).catch(() => new Response('', { status: 408 }));
-    })
+      })
+      .catch(() => {
+        // If offline or network fails, fallback to Cache
+        return caches.match(e.request).then((cached) => {
+          if (cached) return cached;
+          
+          // If it's a page navigation and not in cache, fallback to index.html
+          if (e.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+          
+          return new Response('', { status: 408 });
+        });
+      })
   );
 });
