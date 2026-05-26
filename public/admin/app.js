@@ -78,7 +78,7 @@ async function save(storeName, data, silent = false) {
     return await res.json();
   } catch (error) {
     console.warn(`[Sync] Error saving ${storeName}:`, error);
-    if (!silent) toast(`Error: ${error.message.substring(0, 50)}`, 'error');
+    if (!silent) toast(`Error: ${error.message}`, 'error');
     return data;
   }
 }
