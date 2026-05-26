@@ -711,15 +711,18 @@
 <body>
 
   <!-- Floating Controls Overlay -->
-  <div class="control-bar no-print">
-    <button class="btn-action primary" onclick="window.print()" title="Cetak langsung atau ekspor ke file PDF">
-      <i class="ti ti-printer"></i> Export / Cetak PDF
+  <div class="control-bar no-print" data-html2canvas-ignore>
+    <button class="btn-action primary" onclick="window.print()" title="Cetak langsung menggunakan Browser">
+      <i class="ti ti-printer"></i> Print Browser
+    </button>
+    <button class="btn-action primary" style="background-color: #10B981; border-color: #059669;" onclick="downloadPDF()" title="Download PDF Langsung (Untuk HP/APK)">
+      <i class="ti ti-download"></i> Download PDF
     </button>
     <button class="btn-action" id="btnEdit" onclick="toggleEditMode()" title="Mode pengisian/pengubahan teks instan di layar">
-      <i class="ti ti-edit"></i> Mode Edit Langsung
+      <i class="ti ti-edit"></i> Edit
     </button>
     <button class="btn-action" id="btnQrisToggle" onclick="toggleQrisView()" title="Tampilkan kode QR untuk transfer instant">
-      <i class="ti ti-qrcode"></i> Tampilkan QRIS
+      <i class="ti ti-qrcode"></i> QRIS
     </button>
   </div>
 
@@ -1093,6 +1096,29 @@ Belum dilengkapi</div>
         console.error('Invoice integration payload parsing aborted:', err);
       }
     });
+
+    function downloadPDF() {
+      const element = document.getElementById('invContainer');
+      const invoiceNo = document.getElementById('pMetaInvoice').textContent || 'Invoice';
+      const safeName = invoiceNo.replace(/[\/\\]/g, '-');
+      
+      const opt = {
+        margin:       [0.2, 0, 0.2, 0], // top, left, bottom, right
+        filename:     `Invoice_${safeName}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      // Ensure html2pdf is loaded
+      if (typeof html2pdf !== 'undefined') {
+        html2pdf().set(opt).from(element).save();
+      } else {
+        alert("Library PDF sedang dimuat, coba beberapa detik lagi.");
+      }
+    }
   </script>
+  <!-- Load html2pdf dynamically for mobile/APK PDF download support -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
