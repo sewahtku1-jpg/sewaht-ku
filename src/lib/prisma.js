@@ -8,7 +8,8 @@ const prismaClientSingleton = () => {
   const pool = new Pool({ 
     connectionString,
     connectionTimeoutMillis: 30000,
-    max: 15
+    idleTimeoutMillis: 1,
+    max: 10
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
