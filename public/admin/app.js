@@ -42,7 +42,7 @@ async function seedData() {
 // --- DB HELPERS (Neon CRUD via Next.js API) ---
 async function getAll(storeName) {
   try {
-    const res = await fetch(`/api/admin/db?store=${storeName}`);
+    const res = await fetch(`/api/admin/db?store=${storeName}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       return data;

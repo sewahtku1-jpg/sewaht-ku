@@ -1,14 +1,8 @@
-import { PrismaClient } from '@prisma/client';
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-const connectionString = process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -48,10 +42,11 @@ export async function POST(request) {
         create: data
       });
     } else if (store === 'transactions') {
+      const txData = { ...data, amount: Number(data.amount) || 0 };
       result = await prisma.transaction.upsert({
-        where: { id: data.id },
-        update: data,
-        create: data
+        where: { id: txData.id },
+        update: txData,
+        create: txData
       });
     } else if (store === 'quotations') {
       const { items, customer, ...orderData } = data;
@@ -85,6 +80,7 @@ export async function POST(request) {
       };
 
       // Upsert order
+      console.log('cleanOrder:', JSON.stringify(cleanOrder, null, 2));
       result = await prisma.order.upsert({
         where: { id: cleanOrder.id },
         update: cleanOrder,
@@ -110,7 +106,7 @@ export async function POST(request) {
     }
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Prisma Error:', error.message);
+    console.error('Prisma Error Full:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
