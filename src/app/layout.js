@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Sewa HT Ku - Full-Stack Rental HT Profesional",
+  title: "Sewa HT Ku - Rental HT",
   description: "Solusi komunikasi terbaik untuk segala jenis acara Anda. Sewa HT berkualitas, sinyal jernih, dan harga terjangkau.",
 };
 
