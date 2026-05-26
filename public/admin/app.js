@@ -650,7 +650,11 @@ function resetQuoteForm() {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   const r = Math.floor(1000 + Math.random() * 9000);
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const dayName = days[d.getDay()];
+  
   document.getElementById('q-order-no').value = `SHK/${yyyy}${mm}${dd}-${r}`;
+  document.getElementById('q-invoice-no').value = `SHK/${dayName}, ${dd}-${mm}-${yyyy}/${r}`;
   document.getElementById('q-date').valueAsDate = new Date();
   document.getElementById('q-items-tbody').innerHTML = '';
   addQuoteRow();
