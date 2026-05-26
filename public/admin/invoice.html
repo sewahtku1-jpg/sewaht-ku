@@ -469,6 +469,15 @@
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
+    .pay-and-sig-flex {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      gap: 1.5rem !important;
+    }
+    .pay-grid-wrap {
+      flex: 1 !important;
+    }
     .pay-header {
       display: flex !important;
       justify-content: space-between !important;
@@ -603,6 +612,7 @@
       .inv-table-area { padding: 1.25rem 1.25rem 0.25rem !important; }
       .inv-bottom-grid { grid-template-columns: 1fr !important; padding: 0 1.25rem 1.25rem !important; gap: 1.25rem !important; }
       .inv-deposit, .inv-payment-card, .inv-signature-block { margin: 0 1.25rem 1.25rem !important; padding: 1rem !important; }
+      .pay-and-sig-flex { flex-direction: column !important; align-items: stretch !important; gap: 1.5rem !important; }
       .pay-grid { grid-template-columns: 1fr !important; }
       .inv-footer { padding: 1.25rem !important; flex-direction: column !important; align-items: flex-start !important; gap: 0.85rem !important; }
       .foot-contacts { align-items: flex-start !important; }
@@ -835,24 +845,26 @@ Belum dilengkapi</div>
         <span class="p-title">Informasi Rekening Pembayaran</span>
         <span class="p-mode">Transfer Instant</span>
       </div>
-      <div class="pay-grid">
-        <div class="pay-item">
-          <div class="p-key">Bank Utama</div>
-          <div class="p-val editable">Shopeepay / E-Wallet</div>
-        </div>
-        <div class="pay-item">
-          <div class="p-key">No. Rekening</div>
-          <div class="p-val highlight editable">0838-0796-1536</div>
-        </div>
-        <div class="pay-item">
-          <div class="p-key">Atas Nama</div>
-          <div class="p-val editable">Januba Arifah</div>
-        </div>
-        <div class="pay-item">
-          <div class="p-key">Alternatif Bank</div>
-          <div class="p-val editable">BRI: 053801085867505</div>
-        </div>
-      </div>
+      <div class="pay-and-sig-flex">
+        <div class="pay-grid-wrap">
+          <div class="pay-grid">
+            <div class="pay-item">
+              <div class="p-key">Bank Utama</div>
+              <div class="p-val editable">Shopeepay / E-Wallet</div>
+            </div>
+            <div class="pay-item">
+              <div class="p-key">No. Rekening</div>
+              <div class="p-val highlight editable">0838-0796-1536</div>
+            </div>
+            <div class="pay-item">
+              <div class="p-key">Atas Nama</div>
+              <div class="p-val editable">Januba Arifah</div>
+            </div>
+            <div class="pay-item">
+              <div class="p-key">Alternatif Bank</div>
+              <div class="p-val editable">BRI: 053801085867505</div>
+            </div>
+          </div>
 
       <!-- Toggleable QRIS Frame -->
       <div class="qris-overlay" id="pQrisBlock">
@@ -875,17 +887,18 @@ Belum dilengkapi</div>
         </div>
         <div class="qr-lbl">Kompatibel dengan semua aplikasi M-Banking & E-Wallet</div>
       </div>
-    </section>
-
-    <!-- Signature & Stamp Block -->
-    <section class="inv-signature-block">
-      <div class="sig-content">
-        <div class="sig-title">Hormat kami,</div>
-        <div class="sig-company editable">Sewa HT Ku</div>
-        <div class="sig-stamp-wrapper">
-          <img src="/assets/logo.png" alt="Stampel Sewa HT Ku" class="sig-stamp" />
         </div>
-        <div class="sig-name editable">Sewa HT Ku</div>
+
+        <!-- Signature Block directly aligned right -->
+        <div class="sig-content">
+          <div class="sig-title">Hormat kami,</div>
+          <div class="sig-company editable">Sewa HT Ku</div>
+          <div class="sig-stamp-wrapper">
+            <img src="/assets/logo.png" alt="Stampel Sewa HT Ku" class="sig-stamp" />
+          </div>
+          <div class="sig-name editable">Sewa HT Ku</div>
+        </div>
+
       </div>
     </section>
 
