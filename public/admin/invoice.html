@@ -824,14 +824,7 @@ Belum dilengkapi</div>
       </div>
     </section>
 
-    <!-- Deposit Section -->
-    <div class="inv-deposit">
-      <div class="dep-info">
-        <div class="d-lbl">Jaminan Penyewaan (Deposit)</div>
-        <div class="d-note">Jaminan KTP / Kartu Identitas Asli yang masih berlaku</div>
-      </div>
-      <span class="dep-tag" id="pDepStatus">Wajib Diserahkan</span>
-    </div>
+
 
     <!-- Bank Details Section -->
     <section class="inv-payment-card">
@@ -971,16 +964,20 @@ Belum dilengkapi</div>
         const depBlock = document.getElementById('pDepStatus');
         const wmBlock = document.getElementById('pWatermark');
         if (data.paymentStatus === 'Lunas') {
-          depBlock.textContent = 'Identitas Diamankan';
-          depBlock.style.color = '#1d4ed8';
-          depBlock.style.backgroundColor = '#eff6ff';
-          depBlock.style.borderColor = '#bfdbfe';
+          if (depBlock) {
+            depBlock.textContent = 'Identitas Diamankan';
+            depBlock.style.color = '#1d4ed8';
+            depBlock.style.backgroundColor = '#eff6ff';
+            depBlock.style.borderColor = '#bfdbfe';
+          }
           if (wmBlock) wmBlock.classList.add('visible');
         } else {
-          depBlock.textContent = 'Wajib Diserahkan';
-          depBlock.style.color = '';
-          depBlock.style.backgroundColor = '';
-          depBlock.style.borderColor = '';
+          if (depBlock) {
+            depBlock.textContent = 'Wajib Diserahkan';
+            depBlock.style.color = '';
+            depBlock.style.backgroundColor = '';
+            depBlock.style.borderColor = '';
+          }
           if (wmBlock) wmBlock.classList.remove('visible');
         }
 
