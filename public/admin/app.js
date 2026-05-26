@@ -264,7 +264,7 @@ function renderDashboard() {
     qBody.innerHTML += `
       <tr>
         <td><strong>${q.invoiceNo || q.id}</strong></td>
-        <td>${q.customer.name}</td>
+        <td>${q.customer ? q.customer.name : '-'}</td>
         <td>${toIDR(q.grandTotal)}</td>
         <td><span class="badge ${getBadgeColor(q.status)}">${q.status}</span></td>
       </tr>
@@ -303,7 +303,7 @@ function renderQuotations() {
         <td><span class="badge ${getBadgeColor(q.paymentStatus)}">${q.paymentStatus}</span></td>
         <td><strong>${q.invoiceNo || '-'}</strong><br><small>${q.id}</small></td>
         <td>${toIDDate(q.date)}</td>
-        <td>${q.customer.name}</td>
+        <td>${q.customer ? q.customer.name : '-'}</td>
         <td><strong>${toIDR(q.grandTotal)}</strong></td>
         <td><span class="badge ${getBadgeColor(q.status)}">${q.status}</span></td>
         <td>
@@ -442,9 +442,9 @@ function editQuote(id) {
   document.getElementById('q-date').value = q.date;
   document.getElementById('q-status').value = q.status;
   document.getElementById('q-payment-status').value = q.paymentStatus;
-  document.getElementById('q-cust-name').value = q.customer.name;
-  document.getElementById('q-cust-address').value = q.customer.address || '';
-  document.getElementById('q-cust-email').value = q.customer.email || '';
+  document.getElementById('q-cust-name').value = q.customer ? q.customer.name : '';
+  document.getElementById('q-cust-address').value = (q.customer && q.customer.address) ? q.customer.address : '';
+  document.getElementById('q-cust-email').value = (q.customer && q.customer.email) ? q.customer.email : '';
   document.getElementById('q-event').value = q.event;
   document.getElementById('q-location').value = q.location;
   document.getElementById('q-loading-date').value = q.loadingDate;
