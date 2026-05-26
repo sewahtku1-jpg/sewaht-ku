@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sewahtku-v8';
+const CACHE_NAME = 'sewahtku-v9';
 const LOCAL_ASSETS = [
   './index.html',
   './style.css',
@@ -60,13 +60,13 @@ self.addEventListener('fetch', (e) => {
         return res;
       })
       .catch(() => {
-        // If offline or network fails, fallback to Cache
-        return caches.match(e.request).then((cached) => {
+        // If offline or network fails, fallback to Cache (ignoreSearch helps with ?v=7 tags)
+        return caches.match(e.request, { ignoreSearch: true }).then((cached) => {
           if (cached) return cached;
           
           // If it's a page navigation and not in cache, fallback to index.html
           if (e.request.mode === 'navigate') {
-            return caches.match('./index.html');
+            return caches.match('./index.html', { ignoreSearch: true });
           }
           
           return new Response('', { status: 408 });
