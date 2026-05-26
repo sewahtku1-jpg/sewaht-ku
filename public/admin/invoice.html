@@ -145,6 +145,10 @@
     .watermark-lunas.visible {
       display: block;
     }
+    .watermark-lunas.unpaid {
+      color: rgba(220, 38, 38, 0.08);
+      border-color: rgba(220, 38, 38, 0.08);
+    }
 
     /* HEADER — Unified explicit Flexbox logic for perfect rendering */
     .inv-header {
@@ -756,7 +760,7 @@
         <div class="party-name editable">Sewa HT Ku</div>
         <div class="party-address editable">Griya Satria Jingga E2/21 RT003/014
 Ragajaya, Citayam
-0831-9547-4510 | 0838-0796-1536
+0831-9547-4510
 sewahtku1@gmail.com</div>
       </div>
       <div>
@@ -969,7 +973,11 @@ Belum dilengkapi</div>
             depBlock.style.backgroundColor = '#eff6ff';
             depBlock.style.borderColor = '#bfdbfe';
           }
-          if (wmBlock) wmBlock.classList.add('visible');
+          if (wmBlock) {
+            wmBlock.textContent = 'LUNAS';
+            wmBlock.classList.remove('unpaid');
+            wmBlock.classList.add('visible');
+          }
         } else {
           if (depBlock) {
             depBlock.textContent = 'Wajib Diserahkan';
@@ -977,7 +985,11 @@ Belum dilengkapi</div>
             depBlock.style.backgroundColor = '';
             depBlock.style.borderColor = '';
           }
-          if (wmBlock) wmBlock.classList.remove('visible');
+          if (wmBlock) {
+            wmBlock.textContent = 'BELUM LUNAS';
+            wmBlock.classList.add('unpaid');
+            wmBlock.classList.add('visible');
+          }
         }
 
         document.getElementById('pMetaDate').textContent = formatDate(data.date);
