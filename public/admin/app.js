@@ -70,11 +70,15 @@ async function save(storeName, data, silent = false) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ store: storeName, data })
     });
-    if (!res.ok) throw new Error('API save failed');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.warn(`[Sync] Server Error for ${storeName}:`, errData);
+      throw new Error(errData.error || errData.message || `Status: ${res.status}`);
+    }
     return await res.json();
-  } catch (err) {
-    console.warn('API save error:', err.message);
-    if (!silent) toast('Tersimpan lokal (Offline)', 'primary');
+  } catch (error) {
+    console.warn(`[Sync] Error saving ${storeName}:`, error);
+    if (!silent) toast(`Error: ${error.message.substring(0, 50)}`, 'error');
     return data;
   }
 }
